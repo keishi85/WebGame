@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017:27017
+
+  app:
+      build: ./.docker/python
+      ports:
+        - "5001:5000"
+      container_name: "python"
+      working_dir: /usr/src/python
+      volumes:
+        - ./.docker/python:/usr/src/python
+      command: flask run --host=0.0.0.0
