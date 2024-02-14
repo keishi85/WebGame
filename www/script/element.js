@@ -48,6 +48,7 @@ class Block{
         this.color = color;
         this.speed = 1;
         this.question = new Question();
+        this.isFalling = false; // blockが落ちているかどうか
     }
 
     /**
@@ -89,6 +90,8 @@ class Block{
     update(){
         // ブロックのライフが0以下(非生存)の場合何もしない
         if(this.life <= 0){return;}
+
+        
 
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
