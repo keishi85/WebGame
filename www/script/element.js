@@ -41,6 +41,7 @@ class Block{
      */
     constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
         this.ctx = ctx;
+        this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.radius = radius;
         this.life = life;
@@ -50,7 +51,6 @@ class Block{
         this.question = new Question();
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
-        console.log(this.waitFrame);
     }
 
     /**
@@ -118,8 +118,13 @@ class Block{
      */
     checkAnswer(userAnswer){
         if(userAnswer === this.question.answer){
-            // 正解時．ライフ0にする
-            this.life = 0;
+            // 再度待機時間を設定　
+            this.waitTime = Math.random() * 5;  
+            this.waitFrame = this.waitTime * 60; 
+
+            // positionを初期位置に戻す
+            this.position.set(this.initialPosition.x, this.initialPosition.y);
+
             console.log('OK');
             return true;
         } else {
