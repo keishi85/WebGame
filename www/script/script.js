@@ -67,6 +67,16 @@
         [335, 475, 40, 20],
         [335, 543, 40, 40]
     ];
+    /**
+     * 選択中のブロックのインスタンスを格納する変数
+     * @type {Brock}
+     */
+    let selectedBrock = null;
+    /**
+     * 入力された数字を格納する変数
+     * @type {string}
+     */
+    let inputNumber = null;
 
 
     /**
@@ -125,6 +135,11 @@
         numberKeyArray.map((v) => {
             v.update();
         });
+        // 入力された数字の更新
+        drawInputNumber();
+        if(selectedBrock !== null){
+            selectedBrock.drawSelectedSignal();
+        }
 
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -182,34 +197,115 @@
     function ClickOrTouch(event) {
         let x, y;
 
+        
         if(event.type === 'click'){
+            // クリックの時
             x = event.pageX - canvas.offsetLeft;
             y = event.pageY - canvas.offsetTop;
         }
         else if(event.type === 'touchstart'){
+            // タッチの時
             let touch = event.touches[0];
             x = touch.pageX - canvas.offsetLeft;
             y = touch.pageY - canvas.offsetTop;
         }
 
-        // if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
-
-        // }
-        // else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
-
-        // }
+        if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
+            // クリックしたエリアが，上の解答可能エリアの時
+            ClickQuestionArea(x, y);
+        }
+        else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
+            // クリックしたエリアが，下の数字キーのエリアの時
+            ClickKyeArea(x, y);
+        }
     }
 
-    // /**
-    //  * 
-    //  * @param {number} x - クリックされたX座標 
-    //  * @param {number} y - クリックされたY座標
-    //  */
-    // function ClickQuestionArea(x,y){
+    /**
+     * 上の解答可能エリアをクリックした時の判定
+     * @param {number} x - クリックされたX座標 
+     * @param {number} y - クリックされたY座標
+     */
+    function ClickQuestionArea(x,y){
+        // クリックした位置がブロックの円の中にあるかどうかの判定
+        for(let i = 0; i < blockArray.length; ++i){
+            // 円の中心とクリック座標の距離を計算
+            let distance = Math.sqrt((x - blockArray[i].position.x) ** 2 + (y - blockArray[i].position.y) ** 2);
+            // 距離が半径より小さいかどうか判定．1つ見つけたらループを抜ける
+            if(distance <= blockArray[i].radius){
+                // 選択中のブロックに設定する
+                selectedBrock = blockArray[i];
+                console.log(blockArray[i].question.answer);
+                break;
+            }
+        }
+    }
 
-    // }
+    /**
+     * 下の数字キーのエリアをクリックしたときの判定
+     * @param {number} x - クリックされたX座標
+     * @param {number} y - クリックされたY座標
+     */
+    function ClickKyeArea(x,y){
+        // クリックした位置が数字キーの楕円の中にあるかどうかの判定
+        for(let i = 0; i < numberKeyArray.length; ++i){
+            // 相対距離を計算し判定．1つ見つけたら抜ける．
+            let dx = (x - numberKeyArray[i].position.x) / numberKeyArray[i].radiusX;
+            let dy = (y - numberKeyArray[i].position.y) / numberKeyArray[i].radiusY;
+            if(dx * dx + dy * dy <= 1){
+                // 数字キーの種類によって判断する
+                let type = numberKeyArray[i].type
+                switch (type) {
+                    case 'enter':
+                        if (inputNumber !== null) {
+                            let userAnswer = Number(inputNumber);
+                            if(selectedBrock.checkAnswer(userAnswer) === true){
+                                selectedBrock = null;
+                            }
+                            console.log(type, userAnswer);
+                            inputNumber = null;
+                        }
+                        console.log(type, inputNumber);
+                        break;
+                    case 'C':
+                        inputNumber = null;
+                        console.log(type, inputNumber);
+                        break;
+                    case '-':
+                        if (inputNumber === null) {
+                            inputNumber = type;
+                        }
+                        console.log(type, inputNumber);
+                        break;
+                    case '.':
+                        if (inputNumber === null) {
+                            inputNumber = "0" + type;
+                        } else {
+                            inputNumber += type;
+                        }
+                        console.log(type, inputNumber);
+                        break;
+                    default:
+                        if (inputNumber === null || inputNumber === '0') {
+                            inputNumber = type;
+                        } else {
+                            inputNumber += type;
+                        }
+                        console.log(type, inputNumber);
+                }
+            }
+        }
+    }
 
-    // function ClickKyeArea(x,y){
-
-    // }
+    /**
+     * 入力された数字を描画する
+     */
+    function drawInputNumber(){
+        // 値がnull(何も入力されていない)時はスキップ
+        if(inputNumber === null){return;}
+        // テキストの描画
+        ctx.fillStyle = '#000000';
+        ctx.font = '20px Arial';
+        ctx.textAlign = "center";
+        ctx.fillText(`${inputNumber}`,200, 390); 
+    }
 })();
