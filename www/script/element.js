@@ -103,9 +103,9 @@ class Block{
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
 
-        // 解答可能エリア外に移動したらライフ0(非生存)に設定する
+        // 解答可能エリア外に移動したら初期化を行う
         if(this.position.y + this.radius > this.area){
-            this.life = 0;
+            this.initialize();
             this.selected = false;
         }
 
@@ -128,8 +128,8 @@ class Block{
             // 正解した位置に応じてスコア計算
             let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
 
-            // positionを初期位置に戻す
-            this.position.set(this.initialPosition.x, this.initialPosition.y);
+            // 初期化
+            this.initialize();
 
             // 選択を解除
             this.selected = false;
@@ -166,17 +166,17 @@ class Block{
         // 設定したパスで円の描画を行う
         this.ctx.stroke();
     }
-
     /**
-     * スコアを計算する
-     * @returns {number} 
+     * 問題が回答された場合，もしくは回答できなかった場合に次の問題を設定する
+     * 1.  wait timeを設定
+     * 2. 問題を更新
+     * 3. positionを初期位置に戻す
      */
-    calculateScore(){
-        // 正解した位置に応じてスコア計算
-        let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
-        console.log('AAA');
-        console.log(addScore,this.area, this.position.y);
-        return addScore;
+    initialize(){
+        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.position.set(this.initialPosition.x, this.initialPosition.y);
+        this.question = new Question();
     }
 }
 
