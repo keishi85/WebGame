@@ -68,11 +68,6 @@
         [335, 543, 40, 40]
     ];
     /**
-     * 選択中のブロックのインスタンスを格納する変数
-     * @type {Brock}
-     */
-    //let selectedBrock = null;
-    /**
      * 入力された数字を格納する変数
      * @type {string}
      */
@@ -137,10 +132,6 @@
         });
         // 入力された数字の更新
         drawInputNumber();
-        // if(selectedBrock !== null){
-        //     selectedBrock.drawSelectedSignal();
-        // }
-
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -236,7 +227,6 @@
                     v.selected = false;
                 })
                 // 選択中のブロックに設定する
-                //selectedBrock = blockArray[i];
                 blockArray[i].selected = true;
                 console.log(blockArray[i].question.answer);
                 break;
@@ -261,25 +251,27 @@
                 switch (type) {
                     case 'enter':
                         if (inputNumber !== null) {
+                            // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
+                            // 選択中のブロックの解答をチェックする
                             blockArray.map((v) => {
                                 if(v.selected === true){
                                     v.checkAnswer(userAnswer);
                                 }
                             })
-                            // if(selectedBrock.checkAnswer(userAnswer) === true){
-                            //     selectedBrock = null;
-                            // }
                             console.log(type, userAnswer);
+                            // 解答の入力をnullに戻す
                             inputNumber = null;
                         }
                         console.log(type, inputNumber);
                         break;
                     case 'C':
+                        // 解答の入力をnullに戻す
                         inputNumber = null;
                         console.log(type, inputNumber);
                         break;
                     case '-':
+                        // 解答が未入力の時，先頭にマイナスをつける
                         if (inputNumber === null) {
                             inputNumber = type;
                         }
@@ -287,16 +279,20 @@
                         break;
                     case '.':
                         if (inputNumber === null) {
+                            // 解答が未入力の時，0と小数点を追加
                             inputNumber = "0" + type;
                         } else {
+                            // 解答が入力済みの時，最後尾に小数点を追加
                             inputNumber += type;
                         }
                         console.log(type, inputNumber);
                         break;
                     default:
                         if (inputNumber === null || inputNumber === '0') {
+                            // 解答が未入力の時と0の時は，入力された数字に更新
                             inputNumber = type;
                         } else {
+                            // 解答が入力されている時は，最後尾に追加
                             inputNumber += type;
                         }
                         console.log(type, inputNumber);
