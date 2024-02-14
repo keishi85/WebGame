@@ -51,6 +51,7 @@ class Block{
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         console.log(this.waitFrame);
+        this.selected = false;  // 選択されているかどうか
     }
 
     /**
@@ -105,10 +106,12 @@ class Block{
         // 解答可能エリア外に移動したらライフ0(非生存)に設定する
         if(this.position.y + this.radius > this.area){
             this.life = 0;
+            this.selected = false;
         }
 
         // 円の描画
         this.draw();
+        this.drawSelectedSignal();
     }
 
     /**
@@ -120,6 +123,7 @@ class Block{
         if(userAnswer === this.question.answer){
             // 正解時．ライフ0にする
             this.life = 0;
+            this.selected = false;
             console.log('OK');
             return true;
         } else {
@@ -132,6 +136,8 @@ class Block{
      * 選択されている時に円の枠線をつける
      */
     drawSelectedSignal(){
+        if(this.selected === false){return;}
+
         // パスの設定を開始することを明示する
         this.ctx.beginPath();
         // 円のパスを設定する
