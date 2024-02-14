@@ -46,7 +46,7 @@ class Block{
         this.life = life;
         this.area = area;
         this.color = color;
-        this.speed = 1;
+        this.speed = 0.5;
         this.question = new Question();
     }
 
@@ -100,6 +100,19 @@ class Block{
 
         // 円の描画
         this.draw();
+    }
+
+    /**
+     * 入力された解答をチェックする
+     * @param {number} userAnswer 
+     */
+    checkAnswer(userAnswer){
+        if(userAnswer === this.question.answer){
+            this.life = 0;
+            console.log('OK');
+        } else {
+            console.log('not OK');
+        }
     }
 }
 
