@@ -105,14 +105,42 @@ class Block{
     /**
      * 入力された解答をチェックする
      * @param {number} userAnswer 
+     * @return {boolean}
      */
     checkAnswer(userAnswer){
         if(userAnswer === this.question.answer){
+            // 正解時．ライフ0にする
             this.life = 0;
             console.log('OK');
+            return true;
         } else {
             console.log('not OK');
+            return false;
         }
+    }
+
+    /**
+     * 選択されている時に円の枠線をつける
+     */
+    drawSelectedSignal(){
+        // パスの設定を開始することを明示する
+        this.ctx.beginPath();
+        // 円のパスを設定する
+        this.ctx.arc(
+            this.position.x,
+            this.position.y,
+            this.radius,
+            0.0,
+            Math.PI * 2.0
+        );
+        // 円の色を設定する
+        this.ctx.strokeStyle = '#000000';
+        // 線の太さを設定
+        this.ctx.lineWidth = 3;
+        // パスを閉じることを明示する
+        this.ctx.closePath();
+        // 設定したパスで円の描画を行う
+        this.ctx.stroke();
     }
 }
 

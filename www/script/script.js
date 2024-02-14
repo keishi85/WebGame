@@ -137,6 +137,9 @@
         });
         // 入力された数字の更新
         drawInputNumber();
+        if(selectedBrock !== null){
+            selectedBrock.drawSelectedSignal();
+        }
 
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -255,7 +258,9 @@
                     case 'enter':
                         if (inputNumber !== null) {
                             let userAnswer = Number(inputNumber);
-                            selectedBrock.checkAnswer(userAnswer);
+                            if(selectedBrock.checkAnswer(userAnswer) === true){
+                                selectedBrock = null;
+                            }
                             console.log(type, userAnswer);
                             inputNumber = null;
                         }
