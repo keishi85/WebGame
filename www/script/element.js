@@ -41,6 +41,7 @@ class Block{
      */
     constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
         this.ctx = ctx;
+        this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.radius = radius;
         this.life = life;
@@ -48,6 +49,9 @@ class Block{
         this.color = color;
         this.speed = 0.5;
         this.question = new Question();
+        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.selected = false;  // 選択されているかどうか
     }
 
     /**
@@ -90,16 +94,24 @@ class Block{
         // ブロックのライフが0以下(非生存)の場合何もしない
         if(this.life <= 0){return;}
 
+        // 待機時間を減らす
+        if (this.waitFrame > 0) {
+            this.waitFrame -= 1;
+            return; // 待機時間中は以下の更新処理をスキップ
+        }
+
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
 
-        // 解答可能エリア外に移動したらライフ0(非生存)に設定する
+        // 解答可能エリア外に移動したら初期化を行う
         if(this.position.y + this.radius > this.area){
-            this.life = 0;
+            this.initialize();
+            this.selected = false;
         }
 
         // 円の描画
         this.draw();
+        this.drawSelectedSignal();
     }
 
     /**
@@ -109,8 +121,10 @@ class Block{
      */
     checkAnswer(userAnswer){
         if(userAnswer === this.question.answer){
-            // 正解時．ライフ0にする
-            this.life = 0;
+            // 初期化
+            this.initialize();
+
+            this.selected = false;
             console.log('OK');
             return true;
         } else {
@@ -123,6 +137,8 @@ class Block{
      * 選択されている時に円の枠線をつける
      */
     drawSelectedSignal(){
+        if(this.selected === false){return;}
+
         // パスの設定を開始することを明示する
         this.ctx.beginPath();
         // 円のパスを設定する
@@ -141,6 +157,18 @@ class Block{
         this.ctx.closePath();
         // 設定したパスで円の描画を行う
         this.ctx.stroke();
+    }
+    /**
+     * 問題が回答された場合，もしくは回答できなかった場合に次の問題を設定する
+     * 1.  wait timeを設定
+     * 2. 問題を更新
+     * 3. positionを初期位置に戻す
+     */
+    initialize(){
+        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.position.set(this.initialPosition.x, this.initialPosition.y);
+        this.question = new Question();
     }
 }
 

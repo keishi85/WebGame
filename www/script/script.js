@@ -71,7 +71,7 @@
      * 選択中のブロックのインスタンスを格納する変数
      * @type {Brock}
      */
-    let selectedBrock = null;
+    //let selectedBrock = null;
     /**
      * 入力された数字を格納する変数
      * @type {string}
@@ -110,7 +110,7 @@
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
-        // ブロックを初期化する
+        // ブロックを初期化する(life = 0 で初期化)
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
         }
@@ -137,9 +137,9 @@
         });
         // 入力された数字の更新
         drawInputNumber();
-        if(selectedBrock !== null){
-            selectedBrock.drawSelectedSignal();
-        }
+        // if(selectedBrock !== null){
+        //     selectedBrock.drawSelectedSignal();
+        // }
 
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -232,8 +232,12 @@
             let distance = Math.sqrt((x - blockArray[i].position.x) ** 2 + (y - blockArray[i].position.y) ** 2);
             // 距離が半径より小さいかどうか判定．1つ見つけたらループを抜ける
             if(distance <= blockArray[i].radius){
+                blockArray.map((v) => {
+                    v.selected = false;
+                })
                 // 選択中のブロックに設定する
-                selectedBrock = blockArray[i];
+                //selectedBrock = blockArray[i];
+                blockArray[i].selected = true;
                 console.log(blockArray[i].question.answer);
                 break;
             }
@@ -258,9 +262,14 @@
                     case 'enter':
                         if (inputNumber !== null) {
                             let userAnswer = Number(inputNumber);
-                            if(selectedBrock.checkAnswer(userAnswer) === true){
-                                selectedBrock = null;
-                            }
+                            blockArray.map((v) => {
+                                if(v.selected === true){
+                                    v.checkAnswer(userAnswer);
+                                }
+                            })
+                            // if(selectedBrock.checkAnswer(userAnswer) === true){
+                            //     selectedBrock = null;
+                            // }
                             console.log(type, userAnswer);
                             inputNumber = null;
                         }
