@@ -48,7 +48,9 @@ class Block{
         this.color = color;
         this.speed = 0.5;
         this.question = new Question();
-        this.isFalling = false; // blockが落ちているかどうか
+        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        console.log(this.waitFrame);
     }
 
     /**
@@ -91,7 +93,11 @@ class Block{
         // ブロックのライフが0以下(非生存)の場合何もしない
         if(this.life <= 0){return;}
 
-        
+        // 待機時間を減らす
+        if (this.waitFrame > 0) {
+            this.waitFrame -= 1;
+            return; // 待機時間中は以下の更新処理をスキップ
+        }
 
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
