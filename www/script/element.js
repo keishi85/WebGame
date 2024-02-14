@@ -79,7 +79,7 @@ class Block{
         this.ctx.fillStyle = this.question.color;
         this.ctx.font = this.question.font;
         this.ctx.textAlign = "center";
-        //　テキストを表示
+        // テキストを表示
         this.ctx.fillText(
             `${this.question.number1} ${this.question.operator} ${this.question.number2}`,
             this.position.x,
@@ -117,7 +117,7 @@ class Block{
     /**
      * 入力された解答をチェックする
      * @param {number} userAnswer 
-     * @return {boolean}
+     * @return {number} 
      */
     checkAnswer(userAnswer){
         if(userAnswer === this.question.answer){
@@ -125,15 +125,19 @@ class Block{
             this.waitTime = Math.random() * 5;  
             this.waitFrame = this.waitTime * 60; 
 
+            // 正解した位置に応じてスコア計算
+            let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
+
             // positionを初期位置に戻す
             this.position.set(this.initialPosition.x, this.initialPosition.y);
 
+            // 選択を解除
             this.selected = false;
             console.log('OK');
-            return true;
+            return  addScore;
         } else {
             console.log('not OK');
-            return false;
+            return 0;
         }
     }
 
@@ -162,6 +166,18 @@ class Block{
         // 設定したパスで円の描画を行う
         this.ctx.stroke();
     }
+
+    /**
+     * スコアを計算する
+     * @returns {number} 
+     */
+    calculateScore(){
+        // 正解した位置に応じてスコア計算
+        let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
+        console.log('AAA');
+        console.log(addScore,this.area, this.position.y);
+        return addScore;
+    }
 }
 
 /**
@@ -180,6 +196,7 @@ class Question {
         this.answer = this.calculateAnswer();
         this.color = color;
         this.font = font
+        this.scoreCoefficient = 1;  // スコア計算の係数
     }
 
     /**

@@ -72,6 +72,11 @@
      * @type {string}
      */
     let inputNumber = null;
+    /**
+     * プレイヤーのスコアを格納する変数
+     * @type {number}
+     */
+    let score = 0;
 
 
     /**
@@ -132,6 +137,8 @@
         });
         // 入力された数字の更新
         drawInputNumber();
+        // スコアの更新
+        drawScore();
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -256,7 +263,7 @@
                             // 選択中のブロックの解答をチェックする
                             blockArray.map((v) => {
                                 if(v.selected === true){
-                                    v.checkAnswer(userAnswer);
+                                    score += v.checkAnswer(userAnswer);
                                 }
                             })
                             console.log(type, userAnswer);
@@ -312,5 +319,13 @@
         ctx.font = '20px Arial';
         ctx.textAlign = "center";
         ctx.fillText(`${inputNumber}`,200, 390); 
+    }
+
+    function drawScore(){
+        // テキストの描画
+        ctx.fillStyle = '#000000';
+        ctx.font = '20px Arial';
+        ctx.textAlign = "left";
+        ctx.fillText(`SCORE:${score}`,50, 390); 
     }
 })();
