@@ -18,3 +18,8 @@ services:
       volumes:
         - ./.docker/python:/usr/src/python
       command: flask run --host=0.0.0.0
+
+  web:
+    build: ./www/
+    ports:
+      - "8080:80"
