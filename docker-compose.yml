@@ -2,12 +2,17 @@ version: "3.9"
 services:
   mongo:
     image: mongo
+    container_name: mongo
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - 27017:27017
+    volumes:
+          - ./db:/data/db
+          - ./configdb:/data/configdb
+
 
   app:
       build: ./backend/
@@ -17,4 +22,5 @@ services:
       working_dir: /usr/src/backend
       volumes:
         - ./backend:/usr/src/backend
-      command: flask run --host=0.0.0.0
+      command: ["./start.sh"]
+

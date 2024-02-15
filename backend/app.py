@@ -1,22 +1,24 @@
-from flask import Flask, render_template
-# from flask_pymongo import PyMongo
+from flask import Flask, render_template, jsonify
+from pymongo import MongoClient
+from flask_pymongo import PyMongo
+
 
 app = Flask(__name__)
-# app.config["MONGO_URI"] = "ss2312-mongo-1://localhost:27017/myDatabase"
-# mongo = PyMongo(app)
+
+# MongoDBへの接続設定
+app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
+mongo = PyMongo(app)
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# @app.route('/test_mongodb_connection')
-# def test_mongodb_connection():
-#     # データベースサーバーの情報を取得して接続テスト
-#     server_info = mongo.db.command("serverStatus")
-#     if server_info:
-#         return "Successfully connected to MongoDB."
-#     else:
-#         return "Failed to connect to MongoDB."
+@app.route('/get_questions')
+def get_questions():
+    # MongoDBのコレクションを参照
+    questions_collection = mongo.db.questions
+    get_questions = list(questions_collection.find({}, {'_id': 0}))
+    return jsonify(get_questions)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)
