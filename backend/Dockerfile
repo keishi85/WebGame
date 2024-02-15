@@ -14,4 +14,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # docker-composeでCMDが指定されている場合，以下は実行されない
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["./start.sh"]

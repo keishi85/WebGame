@@ -22,4 +22,5 @@ services:
       working_dir: /usr/src/backend
       volumes:
         - ./backend:/usr/src/backend
-      command: flask run --host=0.0.0.0
+      command: ["./start.sh"]
+
