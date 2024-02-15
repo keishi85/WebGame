@@ -10,16 +10,11 @@ services:
       - 27017:27017
 
   app:
-      build: ./.docker/python
+      build: ./backend/
       ports:
         - "5001:5000"
       container_name: "python"
-      working_dir: /usr/src/python
+      working_dir: /usr/src/backend
       volumes:
-        - ./.docker/python:/usr/src/python
+        - ./backend:/usr/src/backend
       command: flask run --host=0.0.0.0
-
-  web:
-    build: ./www/
-    ports:
-      - "8080:80"
