@@ -76,7 +76,12 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = 0;
+    let score = 0;   
+    /**
+     * プレイヤーの名前を格納する変数
+     * @type {string}
+     */
+    let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
@@ -102,6 +107,8 @@
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
         canvas.addEventListener('touchstart', ClickOrTouch);
+        document.addEventListener('DOMContentLoaded', getDB);
+
 
     }, false);
 
