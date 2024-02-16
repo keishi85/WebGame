@@ -37,7 +37,6 @@ class Block{
      * @param {number} life - ライフ（生存フラグを兼ねる）
      * @param {number} area - 解答可能エリア
      * @param {string} color - ブロックの色 
-     * @param {Question} question - 計算問題を管理するクラス
      */
     constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
         this.ctx = ctx;
@@ -74,7 +73,7 @@ class Block{
         this.ctx.closePath();
         // 設定したパスで円の描画を行う
         this.ctx.fill();
-
+            
         // 問題のフォントを設定
         this.ctx.fillStyle = this.question.color;
         this.ctx.font = this.question.font;
@@ -85,6 +84,7 @@ class Block{
             this.position.x,
             this.position.y + 5  // 数字が円の中心にくるよう微調整
         ); 
+        
     }
 
     /**
@@ -298,4 +298,110 @@ class NumberKey{
             this.position.y + 5  // 数字が円の中心にくるよう微調整
         ); 
     }
+}
+
+class Quiz{
+    /**
+     * @constructor
+     * @param {CanvasRenderingContext2D} ctx - 描画などに利用する2Dコンテキスト
+     * @param {number} x - X 座標
+     * @param {number} y - Y 座標
+     * @param {number} width - 横幅
+     * @param {number} height - 縦幅
+     * @param {number} life - ライフ（生存フラグを兼ねる）
+     * @param {number} area - 解答可能エリア
+     * @param {Array<{ question: string, choices: string[], answer: string }>} quizData - クイズの配列
+     * @param {string} color - ブロックの色 
+     */
+    constructor(ctx, x, y, width, height, life, area, quizData, color = '#0000ff'){
+        this.ctx = ctx;
+        this.position = new Position(x, y);
+        this.width = width;
+        this.height = height
+        this.life = life;
+        this.area = area;
+        this.color = color;
+        this.speed = 0.5;
+        this.quizData = quizData;
+        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+    }
+     /**
+     * ブロックを描画する
+     */
+     draw(){      
+        // 円の色を設定する
+        this.ctx.fillStyle = this.color;
+        // 矩形を描画
+        this.ctx.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+         
+        // 問題のフォントを設定
+        this.ctx.fillStyle = '#ffffff'
+        this.ctx.font = '13px Arial';
+        this.ctx.textAlign = "center";
+
+        let quiz = this.quizData[this.quizIndex];
+        let lines = [
+            quiz.question,
+            `1: ${quiz.choices[0]}`,
+            `2: ${quiz.choices[1]}`,
+            `3: ${quiz.choices[2]}`,
+            `4: ${quiz.choices[3]}`
+        ];
+    
+        let lineHeight = 15; // ラインの高さ
+        let x = this.position.x;
+        let y = this.position.y - lineHeight * lines.length / 2; // 中央揃えのためのオフセット
+    
+        lines.forEach(line => {
+            this.ctx.fillText(line, x, y);
+            y += lineHeight; // 次の行に移動
+        });
+        
+        
+    }
+
+    /**
+     * ブロックの位置の更新
+     */
+    update(){
+        // ブロックのライフが0以下(非生存)の場合何もしない
+        if(this.life <= 0){return;}
+
+        // 下に進める(y座標を進める)
+        this.position.y += this.speed;
+
+        // 解答可能エリア外に移動したらライフ0
+        if(this.position.y + this.height / 2 > this.area){
+            this.life = 0;
+        }
+
+        this.draw();
+    }
+
+    /**
+     * 入力された解答をチェックする
+     * @param {number} userAnswer 
+     * @return {number} 
+     */
+    checkAnswer(userAnswer){
+        if(userAnswer === this.quizData[this.index].answer){
+
+            // 正解した位置に応じてスコア計算
+            let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
+
+            // 選択を解除
+            this.selected = false;
+            console.log('OK');
+            return  addScore;
+        } else {
+            console.log('not OK');
+            return 0;
+        }
+    }
+
+    // クイズをセットする
+    setQUiz(){
+        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+    }
+
 }

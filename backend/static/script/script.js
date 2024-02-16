@@ -86,7 +86,12 @@
      * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
-    const questionsData = [];
+    let quizData = [];
+    /**
+     * クイズのインスタンスを格納する変数
+     * @type {Quiz}
+     */
+    let quizInstance = null;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -120,6 +125,9 @@
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
+        // データベースから問題を取得(ブロックの初期化より前)
+        getDB();
+
         // ブロックを初期化する(life = 0 で初期化)
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
@@ -128,7 +136,10 @@
         // 数字キーの初期化
         initializeNumberKey();
 
-        getDB();
+        // クイズインスタンスの初期化
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+
+        
     }
 
     /**
@@ -147,6 +158,8 @@
         numberKeyArray.map((v) => {
             v.update();
         });
+        // クイズの更新
+        quizInstance.update();
         // 入力された数字の更新
         drawInputNumber();
         // スコアの更新
@@ -366,7 +379,8 @@
                 choices: choices,
                 answer: item.answer
             };
-            questionsData.push(questionObject);
+            quizData.push(questionObject);
+            console.log(quizData);
         });
     }
 })();
