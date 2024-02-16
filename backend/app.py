@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from pymongo import MongoClient
 from flask_pymongo import PyMongo
 
@@ -23,19 +23,19 @@ def index():
     # HTMLテンプレートにデータベースのデータを渡してレンダリング
     return render_template('index.html', questions=questions)
 
+@app.route('/submit_score', methods=['POST'])
+def submit_score():
+    data = request.get_json()
+    name = data.get('name')
+    score = data.get('score')
+    
+    if not name or score is None:
+        return jsonify({"error": "Name and score are required"}), 400
 
-# DBから問題を取得するエンドポイント
-@app.route('/get_questions')
-def get_questions():
-    # MongoDBのコレクションを参照
-    questions_collection = mongo.db.questions
-    get_questions = list(questions_collection.find({}, {'_id': 0}))
-    return jsonify(get_questions)
-
-# 問題を表示させるHTMLを返すエンドポイント
-@app.route('/questions')
-def questions():
-    return render_template('question.html')
+    # データベースにプレイヤーの得点を格納
+    mongo.db.scores.insert_one({'name': name, 'score': score})
+    
+    return jsonify({"message": "Score submitted successfully"}), 200
 
 
 if __name__ == '__main__':

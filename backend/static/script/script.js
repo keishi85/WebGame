@@ -276,6 +276,8 @@
                             blockArray.map((v) => {
                                 if(v.selected === true){
                                     score += v.checkAnswer(userAnswer);
+                                    // 正解した場合，DBに反映
+                                    sendScore(playerName, score)
                                 }
                             })
                             console.log(type, userAnswer);
@@ -367,6 +369,28 @@
                 answer: item.answer
             };
             questionsData.push(questionObject);
+        });
+    }
+
+    /**
+     * プレイヤーの得点をサーバーに送信する関数
+     * @param {string} playerName 
+     * @param {num} score 
+     */
+    function sendScore(playerName, score) {
+        fetch('/submit_score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName, score: score}),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
     }
 })();
