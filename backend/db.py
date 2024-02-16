@@ -44,7 +44,15 @@ def main():
 
 # 問題を追加する関数
 def add_question(questions_collection, question, answer):
-    questions_collection.insert_one({'question': question, 'answer': answer})
+    # データベース内で同じ質問を検索
+    if questions_collection.find_one({'question': question}) is None:
+        # 同じ質問が存在しない場合は、新たに追加
+        questions_collection.insert_one({'question': question, 'answer': answer})
+        print(f"Added: {question} -> {answer}")
+    else:
+        # 同じ質問が既に存在する場合は追加しない
+        print(f"Already exists: {question} -> {answer}")
+
 
 if __name__ == "__main__":
     main()
