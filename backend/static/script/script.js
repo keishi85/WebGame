@@ -92,6 +92,11 @@
      * @type {Quiz}
      */
     let quizInstance = null;
+    /**
+     * DBから取得した名前とスコアを格納
+     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     */
+    let scoresData = [];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -164,6 +169,8 @@
         drawInputNumber();
         // スコアの更新
         drawScore();
+        // 各プレイヤーの名前，順位，スコアを描画
+        drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -289,6 +296,11 @@
                             blockArray.map((v) => {
                                 if(v.selected === true){
                                     score += v.checkAnswer(userAnswer);
+                                    // 正解した場合，DBに反映
+                                    // DBから各プレイヤーの名前とスコアを取得
+                                    sendScore(playerName, score).then(() => {
+                                        getScores(playerName);
+                                    });
                                 }
                             })
                             console.log(type, userAnswer);
@@ -379,8 +391,78 @@
                 choices: choices,
                 answer: item.answer
             };
-            quizData.push(questionObject);
-            console.log(quizData);
+            questionsData.push(questionObject);
         });
     }
+
+    /**
+     * プレイヤーの得点をサーバーに送信する関数
+     * @param {string} playerName 
+     * @param {num} score 
+     */
+    function sendScore(playerName, score) {
+        return fetch('/submit_score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName, score: score}),
+        })
+        // ".then" : Promiseオブジェクトに使用され、Promiseが完了した後に実行される処理を定義
+        .then(response => response.json())
+        // 以下のreturnはさらに".then"がある場合に必要となるもの
+        .then(data => {
+            console.log('Success:', data);
+            return data; // ここでPromiseを解決
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+    /**
+     * DBから各プレイヤーの名前とスコアを取得
+     * scoresData.name, scoresData.rank, scoresData.score
+     */
+    function getScores(playerName) {
+        // クエリパラメータを使用してプレイヤー名をエンドポイントに送信
+        const url = `/get_scores?name=${encodeURIComponent(playerName)}`;
+    
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // データをコンソールに表示
+                scoresData = data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    function drawPlayerNameAndScore(){
+        // プレイヤー，順位，スコアを表示
+        scoresData.forEach((player, index) => {
+            const x = 75; // 名前の開始位置
+            const y = 50 + 25 * index; // 縦方向の位置
+            const separator = " : "; // 区切り文字
+            const rankText = `${player.rank}位`;
+            const nameText = `${player.name}`;
+            const scoreText = `${player.score}点`;
+            
+            // 順位を描画
+            ctx.fillText(rankText, x, y);
+            
+            // 名前の最大幅を計算（仮に200ピクセルとします）
+            const nameMaxWidth = 110;
+            
+            // 名前を描画
+            ctx.fillText(nameText, x + ctx.measureText(rankText).width, y);
+            
+            // スコアの位置を名前の幅に応じて調整
+            const scoreX = x + nameMaxWidth;
+            
+            // 「:」とスコアを描画
+            ctx.fillText(separator + scoreText, scoreX, y);
+        });
+        
+    }
+    
 })();
