@@ -87,7 +87,11 @@
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     const questionsData = [];
-
+    /**
+     * DBから取得した名前とスコアを格納
+     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     */
+    let scoresData = [];
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -279,7 +283,7 @@
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
-                                        getScores();
+                                        getScores(playerName);
                                     });
                                 }
                             })
@@ -402,16 +406,20 @@
     /**
      * DBから各プレイヤーの名前とスコアを取得
      */
-    function getScores() {
-        // スコア情報を取得してコンソールに表示
-        fetch('/get_scores')
+    function getScores(playerName) {
+        // クエリパラメータを使用してプレイヤー名をエンドポイントに送信
+        const url = `/get_scores?name=${encodeURIComponent(playerName)}`;
+    
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 console.log(data);  // データをコンソールに表示
-                
+                scoresData = data;
+                // 必要に応じてデータをページに表示する処理をここに追加
             })
             .catch(error => {
                 console.error('Error:', error);
             });
     }
+    
 })();

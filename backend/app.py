@@ -41,11 +41,21 @@ def submit_score():
     
     return jsonify({"message": "Score submitted successfully"}), 200
 
-# プレイヤーの得点をDBから取得
 @app.route('/get_scores', methods=['GET'])
 def get_scores():
-    scores = mongo.db.scores.find({}, {'_id': 0})  # '_id' フィールドを除外
-    return jsonify(list(scores))
+    player_name = request.args.get('name')  # クエリパラメータからプレイヤー名を取得
+    # スコアが高い順にソートして上位3人を取得
+    top_scores = mongo.db.scores.find({}, {'_id': 0}).sort('score', -1).limit(3)
+    top_scores_list = list(top_scores)
+
+    # 指定されたプレイヤーのスコアを取得
+    player_score = mongo.db.scores.find_one({'name': player_name}, {'_id': 0})
+
+    # 指定されたプレイヤーがトップ3に入っていない場合、そのスコアを結果に追加
+    if player_score and not any(player['name'] == player_name for player in top_scores_list):
+        top_scores_list.append(player_score)
+
+    return jsonify(top_scores_list)
 
 
 
