@@ -9,8 +9,13 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
 mongo = PyMongo(app)
 
-# DBから問題を取得 + ゲームの開始
+# ゲーム開始ボタンのエンドポイント
 @app.route('/')
+def start():
+    return render_template('start.html')
+
+# DBから問題を取得 + ゲームの開始
+@app.route('/game')
 def index():
     # MongoDBのコレクションを参照
     questions_collection = mongo.db.questions

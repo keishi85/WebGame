@@ -76,8 +76,11 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = 0;
-
+    let score = 0;   
+    /**
+     * プレイヤーの名前を格納する変数
+     */
+    let playerName = localStorage.getItem('playerName')
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -98,9 +101,7 @@
         canvas.addEventListener('click', ClickOrTouch);
         canvas.addEventListener('touchstart', ClickOrTouch);
 
-        document.addEventListener('DOMContentLoaded', getDB);
-
-
+        // document.addEventListener('DOMContentLoaded', getDB);
     }, false);
 
     /**
@@ -118,6 +119,8 @@
 
         // 数字キーの初期化
         initializeNumberKey();
+
+        getDB();
     }
 
     /**
@@ -330,16 +333,13 @@
         ctx.fillText(`SCORE:${score}`,50, 390); 
     }
 
-    function getDB(event){
+    function getDB(){
         const questionsContainer = document.getElementById('questions-container');
         // データ属性からquestionsデータを取得
         const questionsData = JSON.parse(questionsContainer.getAttribute('data-questions'));
 
         // 取得したデータを使用してDOMを更新
         questionsData.forEach((item, index) => {
-            // const questionElement = document.createElement('div');
-            // questionElement.innerHTML = `<strong>問題 ${index + 1}:</strong> ${item.question}<br><strong>答え:</strong> ${item.answer}`;
-            // questionsContainer.appendChild(questionElement);
             console.log(`問題 ${index + 1}: ${item.question}, 答え: ${item.answer}`);
         });
     }
