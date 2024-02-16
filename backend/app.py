@@ -32,10 +32,21 @@ def submit_score():
     if not name or score is None:
         return jsonify({"error": "Name and score are required"}), 400
 
-    # データベースにプレイヤーの得点を格納
-    mongo.db.scores.insert_one({'name': name, 'score': score})
+    # 名前で検索して該当するものがあれば得点を上書き、なければ新規に挿入
+    mongo.db.scores.update_one(
+        {'name': name},
+        {'$set': {'score': score}},
+        upsert=True
+    )
     
     return jsonify({"message": "Score submitted successfully"}), 200
+
+# プレイヤーの得点をDBから取得
+@app.route('/get_scores', methods=['GET'])
+def get_scores():
+    scores = mongo.db.scores.find({}, {'_id': 0})  # '_id' フィールドを除外
+    return jsonify(list(scores))
+
 
 
 if __name__ == '__main__':

@@ -277,7 +277,10 @@
                                 if(v.selected === true){
                                     score += v.checkAnswer(userAnswer);
                                     // 正解した場合，DBに反映
-                                    sendScore(playerName, score)
+                                    // DBから各プレイヤーの名前とスコアを取得
+                                    sendScore(playerName, score).then(() => {
+                                        getScores();
+                                    });
                                 }
                             })
                             console.log(type, userAnswer);
@@ -378,19 +381,37 @@
      * @param {num} score 
      */
     function sendScore(playerName, score) {
-        fetch('/submit_score', {
+        return fetch('/submit_score', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({name: playerName, score: score}),
         })
+        // ".then" : Promiseオブジェクトに使用され、Promiseが完了した後に実行される処理を定義
         .then(response => response.json())
+        // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
             console.log('Success:', data);
+            return data; // ここでPromiseを解決
         })
         .catch((error) => {
             console.error('Error:', error);
         });
+    }
+    /**
+     * DBから各プレイヤーの名前とスコアを取得
+     */
+    function getScores() {
+        // スコア情報を取得してコンソールに表示
+        fetch('/get_scores')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // データをコンソールに表示
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
 })();
