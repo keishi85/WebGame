@@ -37,18 +37,18 @@ def main():
   # テキストファイルから問題を読み込む + DBに追加
   with open(QUESTION_FILE_PATH, "r") as f:
     for line in f:
-      question, answer = line.strip().split(",")
-      add_question(questions_collection, question, answer)
-      print(f"Added: {question} -> {answer}")
+      question, choice1, choice2, choice3, choice4, answer = line.strip().split(",")
+      add_question(questions_collection, question, choice1, choice2, choice3, choice4, answer)
+      print(f"Added: {question} -> {choice1} -> {choice2} -> {choice3} -> {choice4} -> {answer}")
 
 
 # 問題を追加する関数
-def add_question(questions_collection, question, answer):
+def add_question(questions_collection, question, choice1, choice2, choice3, choice4, answer):
     # データベース内で同じ質問を検索
     if questions_collection.find_one({'question': question}) is None:
         # 同じ質問が存在しない場合は、新たに追加
-        questions_collection.insert_one({'question': question, 'answer': answer})
-        print(f"Added: {question} -> {answer}")
+        questions_collection.insert_one({'question': question, 'choice1':choice1, 'choice2':choice2, 'choice3':choice3, 'choice4':choice4,'answer': answer})
+        print(f"Added: {question} -> {choice1} -> {choice2} -> {choice3} -> {choice4} -> {answer}")
     else:
         # 同じ質問が既に存在する場合は追加しない
         print(f"Already exists: {question} -> {answer}")

@@ -76,7 +76,17 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = 0;
+    let score = 0;   
+    /**
+     * プレイヤーの名前を格納する変数
+     * @type {string}
+     */
+    let playerName = localStorage.getItem('playerName')
+    /**
+     * DBから取得した問題を管理する変数
+     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     */
+    const questionsData = [];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -97,7 +107,6 @@
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
         canvas.addEventListener('touchstart', ClickOrTouch);
-
         document.addEventListener('DOMContentLoaded', getDB);
 
 
@@ -118,6 +127,8 @@
 
         // 数字キーの初期化
         initializeNumberKey();
+
+        getDB();
     }
 
     /**
@@ -322,6 +333,9 @@
         ctx.fillText(`${inputNumber}`,200, 390); 
     }
 
+    /**
+     * スコアの描画をする
+     */
     function drawScore(){
         // テキストの描画
         ctx.fillStyle = '#000000';
@@ -330,17 +344,29 @@
         ctx.fillText(`SCORE:${score}`,50, 390); 
     }
 
-    function getDB(event){
+    /**
+     * DBから問題を取得
+     */
+    function getDB(){
         const questionsContainer = document.getElementById('questions-container');
         // データ属性からquestionsデータを取得
         const questionsData = JSON.parse(questionsContainer.getAttribute('data-questions'));
 
         // 取得したデータを使用してDOMを更新
         questionsData.forEach((item, index) => {
-            // const questionElement = document.createElement('div');
-            // questionElement.innerHTML = `<strong>問題 ${index + 1}:</strong> ${item.question}<br><strong>答え:</strong> ${item.answer}`;
-            // questionsContainer.appendChild(questionElement);
-            console.log(`問題 ${index + 1}: ${item.question}, 答え: ${item.answer}`);
+
+            console.log(`問題 ${index + 1}: ${item.question}, 選択肢1: ${item.choice1}, 選択肢2: ${item.choice2}, 選択肢3: ${item.choice3}, 選択肢4: ${item.choice4}, 答え: ${item.answer}`);
+
+             // 選択肢を配列にまとめる
+            let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
+            
+            // 問題オブジェクトを作成して配列に追加する
+            let questionObject = {
+                question: item.question,
+                choices: choices,
+                answer: item.answer
+            };
+            questionsData.push(questionObject);
         });
     }
 })();
