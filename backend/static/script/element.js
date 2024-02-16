@@ -299,3 +299,34 @@ class NumberKey{
         ); 
     }
 }
+
+/**
+ * プレイヤーの順位を管理するクラス
+ */
+class Player{
+    /**
+     * @constructor
+     * @param {CanvasRenderingContext2D} ctx - 描画などに利用する2Dコンテキスト
+     * @param {number} x - X 座標
+     * @param {number} y - Y 座標
+     * @param {number} radius - 半径
+     * @param {number} life - ライフ（生存フラグを兼ねる）
+     * @param {number} area - 解答可能エリア
+     * @param {string} color - ブロックの色 
+     * @param {Question} question - 計算問題を管理するクラス
+     */
+    constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
+        this.ctx = ctx;
+        this.initialPosition = new Position(x, y); // 初期位置を記憶する
+        this.position = new Position(x, y);
+        this.radius = radius;
+        this.life = life;
+        this.area = area;
+        this.color = color;
+        this.speed = 0.5;
+        this.question = new Question();
+        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.selected = false;  // 選択されているかどうか
+    }
+}

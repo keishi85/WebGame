@@ -155,6 +155,8 @@
         drawInputNumber();
         // スコアの更新
         drawScore();
+        // 各プレイヤーの名前，順位，スコアを描画
+        drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -420,6 +422,33 @@
             .catch(error => {
                 console.error('Error:', error);
             });
+    }
+    function drawPlayerNameAndScore(){
+        // プレイヤー，順位，スコアを表示
+        scoresData.forEach((player, index) => {
+            const x = 75; // 名前の開始位置
+            const y = 50 + 25 * index; // 縦方向の位置
+            const separator = " : "; // 区切り文字
+            const rankText = `${player.rank}位`;
+            const nameText = `${player.name}`;
+            const scoreText = `${player.score}点`;
+            
+            // 順位を描画
+            ctx.fillText(rankText, x, y);
+            
+            // 名前の最大幅を計算（仮に200ピクセルとします）
+            const nameMaxWidth = 110;
+            
+            // 名前を描画
+            ctx.fillText(nameText, x + ctx.measureText(rankText).width, y);
+            
+            // スコアの位置を名前の幅に応じて調整
+            const scoreX = x + nameMaxWidth;
+            
+            // 「:」とスコアを描画
+            ctx.fillText(separator + scoreText, scoreX, y);
+        });
+        
     }
     
 })();
