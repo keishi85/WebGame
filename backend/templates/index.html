@@ -9,11 +9,12 @@
         <script src="../static/script/canvas2d.js"></script>
         <script src="../static/script/element.js"></script> 
         <script src="../static/script/script.js"></script>
-        <script src="../static/script/endpoint.js"></script>
     </head>
     <body>
         <h1>my game</h1>
         <!-- ID 属性を持つ canvas エレメント -->
         <canvas id="main_canvas"></canvas>
+        <div id="questions-container" data-questions='{{ questions | tojson | safe }}'></div>
+        <script src="../static/script/endpoint.js"></script>
     </body>
 </html>

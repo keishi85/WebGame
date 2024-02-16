@@ -2,11 +2,4 @@
 __pycache__
 .DS_Store
 configdb
-
-# MongoDB
-.mongodb
-diagnostic.data
-*wt
-*lock
-*turtle
-
+db
