@@ -44,18 +44,27 @@ def submit_score():
 @app.route('/get_scores', methods=['GET'])
 def get_scores():
     player_name = request.args.get('name')  # クエリパラメータからプレイヤー名を取得
-    # スコアが高い順にソートして上位3人を取得
-    top_scores = mongo.db.scores.find({}, {'_id': 0}).sort('score', -1).limit(3)
-    top_scores_list = list(top_scores)
+    # スコアが高い順にソートして全プレイヤーを取得
+    all_scores = mongo.db.scores.find({}, {'_id': 0}).sort('score', -1)
+    all_scores_list = list(all_scores)
 
-    # 指定されたプレイヤーのスコアを取得
-    player_score = mongo.db.scores.find_one({'name': player_name}, {'_id': 0})
+    # 上位3人のプレイヤーと指定されたプレイヤーの情報を含むリストを作成
+    result_list = []
+    player_included = False
+    for rank, player in enumerate(all_scores_list, start=1):
+        # 上位3人のプレイヤーを追加
+        if rank <= 3:
+            player['rank'] = rank
+            result_list.append(player)
+            if player['name'] == player_name:
+                player_included = True
+        # 指定されたプレイヤーがトップ3にいない場合、そのプレイヤーの情報も追加
+        elif player['name'] == player_name and not player_included:
+            player['rank'] = rank
+            result_list.append(player)
+            break  # 指定されたプレイヤーの情報を追加したらループを終了
 
-    # 指定されたプレイヤーがトップ3に入っていない場合、そのスコアを結果に追加
-    if player_score and not any(player['name'] == player_name for player in top_scores_list):
-        top_scores_list.append(player_score)
-
-    return jsonify(top_scores_list)
+    return jsonify(result_list)
 
 
 

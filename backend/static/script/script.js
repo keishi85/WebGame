@@ -405,6 +405,7 @@
     }
     /**
      * DBから各プレイヤーの名前とスコアを取得
+     * scoresData.name, scoresData.rank, scoresData.score
      */
     function getScores(playerName) {
         // クエリパラメータを使用してプレイヤー名をエンドポイントに送信
@@ -415,7 +416,6 @@
             .then(data => {
                 console.log(data);  // データをコンソールに表示
                 scoresData = data;
-                // 必要に応じてデータをページに表示する処理をここに追加
             })
             .catch(error => {
                 console.error('Error:', error);
