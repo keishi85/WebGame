@@ -86,7 +86,17 @@
      * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
-    const questionsData = [];
+    let quizData = [];
+    /**
+     * クイズのインスタンスを格納する変数
+     * @type {Quiz}
+     */
+    let quizInstance = null;
+    /**
+     * DBから取得した名前とスコアを格納
+     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     */
+    let scoresData = [];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -120,7 +130,10 @@
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
-        // ブロックを初期化する(life = 0 で初期化)
+        // データベースから問題を取得(ブロックの初期化より前)
+        getDB();
+
+        // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
         }
@@ -128,7 +141,10 @@
         // 数字キーの初期化
         initializeNumberKey();
 
-        getDB();
+        // クイズインスタンスの初期化
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+
+        
     }
 
     /**
@@ -143,14 +159,23 @@
         blockArray.map((v) => {
             v.update();
         });
-        // 数字キーの更新
-        numberKeyArray.map((v) => {
-            v.update();
-        });
-        // 入力された数字の更新
-        drawInputNumber();
+        
+        if(quizInstance.life === 1){
+            // クイズの更新
+            quizInstance.update();
+        } else {
+            // 数字キーの更新
+            numberKeyArray.map((v) => {
+                v.update();
+            });
+             // 入力された数字の更新
+            drawInputNumber();
+        }
+       
         // スコアの更新
         drawScore();
+        // 各プレイヤーの名前，順位，スコアを描画
+        drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -222,11 +247,15 @@
 
         if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
             // クリックしたエリアが，上の解答可能エリアの時
-            ClickQuestionArea(x, y);
+            //ClickQuestionArea(x, y);
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            ClickKyeArea(x, y);
+            if(quizInstance.life === 1){
+                ClickChoicesArea(x, y);
+            } else {
+                ClickKyeArea(x, y);
+            }
         }
     }
 
@@ -272,17 +301,38 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
-                            // 選択中のブロックの解答をチェックする
-                            blockArray.map((v) => {
-                                if(v.selected === true){
-                                    score += v.checkAnswer(userAnswer);
+
+                            // 画面に表示されているブロックの解答をチェックする
+                            for(let i = 0; i < blockArray.length; ++i){
+                                // 正解かどうかの判定を行う「
+                                let judgement = blockArray[i].checkAnswer(userAnswer);
+                                if(judgement !== 0){
+                                    // スコアを加算
+                                    score += judgement;
+                                    // 正解した場合，DBに反映
+                                    // DBから各プレイヤーの名前とスコアを取得
+                                    sendScore(playerName, score).then(() => {
+                                        getScores(playerName);
+                                    });
+                                    break;
                                 }
-                            })
-                            console.log(type, userAnswer);
+                            }
+
+                            // blockArray.map((v) => {
+                            //     if(v.selected === true){
+                            //         score += v.checkAnswer(userAnswer);
+                            //         // 正解した場合，DBに反映
+                            //         // DBから各プレイヤーの名前とスコアを取得
+                            //         sendScore(playerName, score).then(() => {
+                            //             getScores(playerName);
+                            //         });
+                            //     }
+                            // })
+                            // console.log(type, userAnswer);
+
                             // 解答の入力をnullに戻す
                             inputNumber = null;
                         }
-                        console.log(type, inputNumber);
                         break;
                     case 'C':
                         // 解答の入力をnullに戻す
@@ -316,6 +366,18 @@
                         }
                         console.log(type, inputNumber);
                 }
+            }
+        }
+    }
+
+    function ClickChoicesArea(x, y){
+        
+        for(let i = 0; i < 4; ++i){
+            let position = quizInstance.choicesPosition[i];
+            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
+                console.log(i);
+                quizInstance.checkAnswer(i);
+                break;
             }
         }
     }
@@ -366,7 +428,78 @@
                 choices: choices,
                 answer: item.answer
             };
-            questionsData.push(questionObject);
+            quizData.push(questionObject);
         });
     }
+
+    /**
+     * プレイヤーの得点をサーバーに送信する関数
+     * @param {string} playerName 
+     * @param {num} score 
+     */
+    function sendScore(playerName, score) {
+        return fetch('/submit_score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName, score: score}),
+        })
+        // ".then" : Promiseオブジェクトに使用され、Promiseが完了した後に実行される処理を定義
+        .then(response => response.json())
+        // 以下のreturnはさらに".then"がある場合に必要となるもの
+        .then(data => {
+            console.log('Success:', data);
+            return data; // ここでPromiseを解決
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+    /**
+     * DBから各プレイヤーの名前とスコアを取得
+     * scoresData.name, scoresData.rank, scoresData.score
+     */
+    function getScores(playerName) {
+        // クエリパラメータを使用してプレイヤー名をエンドポイントに送信
+        const url = `/get_scores?name=${encodeURIComponent(playerName)}`;
+    
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // データをコンソールに表示
+                scoresData = data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    function drawPlayerNameAndScore(){
+        // プレイヤー，順位，スコアを表示
+        scoresData.forEach((player, index) => {
+            const x = 75; // 名前の開始位置
+            const y = 50 + 25 * index; // 縦方向の位置
+            const separator = " : "; // 区切り文字
+            const rankText = `${player.rank}位`;
+            const nameText = `${player.name}`;
+            const scoreText = `${player.score}点`;
+            
+            // 順位を描画
+            ctx.fillText(rankText, x, y);
+            
+            // 名前の最大幅を計算（仮に200ピクセルとします）
+            const nameMaxWidth = 110;
+            
+            // 名前を描画
+            ctx.fillText(nameText, x + ctx.measureText(rankText).width, y);
+            
+            // スコアの位置を名前の幅に応じて調整
+            const scoreX = x + nameMaxWidth;
+            
+            // 「:」とスコアを描画
+            ctx.fillText(separator + scoreText, scoreX, y);
+        });
+        
+    }
+    
 })();
