@@ -116,7 +116,7 @@
 
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
-        canvas.addEventListener('touchstart', ClickOrTouch);
+        //canvas.addEventListener('touchstart', ClickOrTouch);
         document.addEventListener('DOMContentLoaded', getDB);
 
 
