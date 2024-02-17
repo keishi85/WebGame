@@ -133,16 +133,16 @@
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
-        // ブロックを初期化する(life = 0 で初期化)
+        // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT);
         }
 
         // 数字キーの初期化
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 1, canvas.height - KEYPAD_HEIGHT, quizData);
 
         
     }
@@ -159,14 +159,19 @@
         blockArray.map((v) => {
             v.update();
         });
-        // 数字キーの更新
-        numberKeyArray.map((v) => {
-            v.update();
-        });
-        // クイズの更新
-        quizInstance.update();
-        // 入力された数字の更新
-        drawInputNumber();
+        
+        if(quizInstance.life === 1){
+            // クイズの更新
+            quizInstance.update();
+        } else {
+            // 数字キーの更新
+            numberKeyArray.map((v) => {
+                v.update();
+            });
+             // 入力された数字の更新
+            drawInputNumber();
+        }
+       
         // スコアの更新
         drawScore();
         // 各プレイヤーの名前，順位，スコアを描画
@@ -407,7 +412,7 @@
                 choices: choices,
                 answer: item.answer
             };
-            questionsData.push(questionObject);
+            quizData.push(questionObject);
         });
     }
 
