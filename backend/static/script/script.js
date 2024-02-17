@@ -84,6 +84,11 @@
     let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
+     * @type {Array<{ question: string, answer: string }>}
+     */
+    let calcData = [];
+    /**
+     * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let quizData = [];
@@ -132,6 +137,8 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
+        console.log(calcData);
+        console.log(quizData);
 
         // ブロックを初期化する(life = 0 で初期化)
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
@@ -378,20 +385,30 @@
         const questionsData = JSON.parse(questionsContainer.getAttribute('data-questions'));
 
         // 取得したデータを使用してDOMを更新
-        questionsData.forEach((item, index) => {
-
-            console.log(`問題 ${index + 1}: ${item.question}, 選択肢1: ${item.choice1}, 選択肢2: ${item.choice2}, 選択肢3: ${item.choice3}, 選択肢4: ${item.choice4}, 答え: ${item.answer}`);
-
-             // 選択肢を配列にまとめる
-            let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
-            
-            // 問題オブジェクトを作成して配列に追加する
-            let questionObject = {
-                question: item.question,
-                choices: choices,
-                answer: item.answer
-            };
-            questionsData.push(questionObject);
+        questionsData.forEach((item) => {
+            if (item.type === 'quiz') {
+                // 選択肢を配列にまとめる
+                let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
+                
+                // 問題オブジェクトを作成して配列に追加する
+                let questionObject = {
+                    question: item.question,
+                    choices: choices,
+                    answer: item.answer
+                };
+                quizData.push(questionObject);
+            }
+            else if (item.type === 'calculation') {
+                // 問題オブジェクトを作成してcalcData配列に追加する
+                let questionObject = {
+                    question: item.problem, // 'problem'フィールドを使用
+                    answer: item.answer
+                };
+                calcData.push(questionObject);
+            }  
+            else {
+                console.error('Invalid question type' + item.type);
+            }
         });
     }
 
