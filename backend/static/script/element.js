@@ -120,6 +120,9 @@ class Block{
      * @return {number} 
      */
     checkAnswer(userAnswer){
+        // 画面に表示されていない場合はスキップ
+        if(this.life === 0){return 0;}
+
         if(userAnswer === this.question.answer){
             // 再度待機時間を設定　
             this.waitTime = Math.random() * 5;  

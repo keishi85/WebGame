@@ -242,7 +242,7 @@
 
         if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
             // クリックしたエリアが，上の解答可能エリアの時
-            ClickQuestionArea(x, y);
+            //ClickQuestionArea(x, y);
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
@@ -292,22 +292,38 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
-                            // 選択中のブロックの解答をチェックする
-                            blockArray.map((v) => {
-                                if(v.selected === true){
-                                    score += v.checkAnswer(userAnswer);
+
+                            // 画面に表示されているブロックの解答をチェックする
+                            for(let i = 0; i < blockArray.length; ++i){
+                                // 正解かどうかの判定を行う「
+                                let judgement = blockArray[i].checkAnswer(userAnswer);
+                                if(judgement !== 0){
+                                    // スコアを加算
+                                    score += judgement;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
                                         getScores(playerName);
                                     });
+                                    break;
                                 }
-                            })
-                            console.log(type, userAnswer);
+                            }
+
+                            // blockArray.map((v) => {
+                            //     if(v.selected === true){
+                            //         score += v.checkAnswer(userAnswer);
+                            //         // 正解した場合，DBに反映
+                            //         // DBから各プレイヤーの名前とスコアを取得
+                            //         sendScore(playerName, score).then(() => {
+                            //             getScores(playerName);
+                            //         });
+                            //     }
+                            // })
+                            // console.log(type, userAnswer);
+
                             // 解答の入力をnullに戻す
                             inputNumber = null;
                         }
-                        console.log(type, inputNumber);
                         break;
                     case 'C':
                         // 解答の入力をnullに戻す
