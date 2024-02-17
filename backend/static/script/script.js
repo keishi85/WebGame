@@ -251,7 +251,11 @@
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            ClickKyeArea(x, y);
+            if(quizInstance.life === 1){
+                ClickChoicesArea(x, y);
+            } else {
+                ClickKyeArea(x, y);
+            }
         }
     }
 
@@ -362,6 +366,18 @@
                         }
                         console.log(type, inputNumber);
                 }
+            }
+        }
+    }
+
+    function ClickChoicesArea(x, y){
+        
+        for(let i = 0; i < 4; ++i){
+            let position = quizInstance.choicesPosition[i];
+            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
+                console.log(i);
+                quizInstance.checkAnswer(i);
+                break;
             }
         }
     }

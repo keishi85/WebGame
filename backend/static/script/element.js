@@ -303,36 +303,6 @@ class NumberKey{
     }
 }
 
-/**
- * プレイヤーの順位を管理するクラス
- */
-class Player{
-    /**
-     * @constructor
-     * @param {CanvasRenderingContext2D} ctx - 描画などに利用する2Dコンテキスト
-     * @param {number} x - X 座標
-     * @param {number} y - Y 座標
-     * @param {number} radius - 半径
-     * @param {number} life - ライフ（生存フラグを兼ねる）
-     * @param {number} area - 解答可能エリア
-     * @param {string} color - ブロックの色 
-     * @param {Question} question - 計算問題を管理するクラス
-     */
-    constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
-        this.ctx = ctx;
-        this.initialPosition = new Position(x, y); // 初期位置を記憶する
-        this.position = new Position(x, y);
-        this.radius = radius;
-        this.life = life;
-        this.area = area;
-        this.color = color;
-        this.speed = 0.5;
-        this.question = new Question();
-        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
-        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
-        this.selected = false;  // 選択されているかどうか
-    }
-}
 
 /**
  * クイズの管理をするクラス
@@ -483,6 +453,27 @@ class Quiz{
             let x = this.choicesPosition[i].x + this.choicesWidth / 2;
             let y = this.choicesPosition[i].y + this.choicesHeight / 2;
             this.ctx.fillText(this.quizData[this.quizIndex].choices[i], x ,y);
+        }
+    }
+
+    checkAnswer(userAnswer){
+        // 画面に表示されていない場合はスキップ
+        if(this.life === 0){return 0;}
+
+        let quiz = this.quizData[this.quizIndex];
+
+        if(quiz.choices[userAnswer] === quiz.answer){
+
+            // スコア計算(仮に1000点)
+            let addScore = 1000;
+
+            console.log('OK');
+
+            this.life = 0;
+            return  addScore;
+        } else {
+            console.log('not OK');
+            return 0;
         }
     }
 
