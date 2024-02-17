@@ -120,6 +120,9 @@ class Block{
      * @return {number} 
      */
     checkAnswer(userAnswer){
+        // 画面に表示されていない場合はスキップ
+        if(this.life === 0){return 0;}
+
         if(userAnswer === this.question.answer){
             // 再度待機時間を設定　
             this.waitTime = Math.random() * 5;  
@@ -333,6 +336,8 @@ class Quiz{
         this.speed = 0.5;
         this.quizData = quizData;
         this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+
+        this.setChoicesPosition();
     }
      /**
      * ブロックを描画する
@@ -345,26 +350,27 @@ class Quiz{
          
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
-        this.ctx.font = '13px Arial';
+        this.ctx.font = '20px Arial';
         this.ctx.textAlign = "center";
 
         let quiz = this.quizData[this.quizIndex];
-        let lines = [
-            quiz.question,
-            `1: ${quiz.choices[0]}`,
-            `2: ${quiz.choices[1]}`,
-            `3: ${quiz.choices[2]}`,
-            `4: ${quiz.choices[3]}`
-        ];
+        // let lines = [
+        //     quiz.question,
+        //     `1: ${quiz.choices[0]}`,
+        //     `2: ${quiz.choices[1]}`,
+        //     `3: ${quiz.choices[2]}`,
+        //     `4: ${quiz.choices[3]}`
+        // ];
     
-        let lineHeight = 15; // ラインの高さ
+        // let lineHeight = 15; // ラインの高さ
         let x = this.position.x;
-        let y = this.position.y - lineHeight * lines.length / 2; // 中央揃えのためのオフセット
-    
-        lines.forEach(line => {
-            this.ctx.fillText(line, x, y);
-            y += lineHeight; // 次の行に移動
-        });
+        let y = this.position.y + 5;
+        // lines.forEach(line => {
+        //     this.ctx.fillText(line, x, y);
+        //     y += lineHeight; // 次の行に移動
+        // });
+
+        this.ctx.fillText(quiz.question, x, y);
         
         
     }
@@ -385,6 +391,7 @@ class Quiz{
         }
 
         this.draw();
+        this.drawChoices();
     }
 
     /**
@@ -411,6 +418,68 @@ class Quiz{
     // クイズをセットする
     setQUiz(){
         this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+    }
+
+    /**
+     * 選択肢の座標を初期化
+     */
+    setChoicesPosition(){
+        // 4つの選択肢の矩形の左上の座標
+        let position = [[30, 420], [210, 420], [30, 510], [210, 510]];
+
+        // 4つの選択肢の座標を格納する配列
+        this.choicesPosition = [];
+        for(let i = 0; i < 4; i++){
+            this.choicesPosition[i] = new Position(position[i][0], position[i][1]);
+            console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
+        }
+        
+
+        // 4つの選択肢の矩形サイズ
+        this.choicesWidth = 160;
+        this.choicesHeight = 80;
+    }
+
+    /**
+     * 下の回答エリアの選択肢の描画
+     */
+    drawChoices(){
+
+        for(let i = 0; i < 4; ++i){
+            // 矩形を描画
+            this.ctx.fillStyle = '#ffffff';
+            
+            this.ctx.fillRect(this.choicesPosition[i].x, this.choicesPosition[i].y, this.choicesWidth, this.choicesHeight);
+            
+            // 選択肢を描画
+            this.ctx.fillStyle = '#000000'
+            this.ctx.font = '15px Arial';
+            this.ctx.textAlign = "center";
+            let x = this.choicesPosition[i].x + this.choicesWidth / 2;
+            let y = this.choicesPosition[i].y + this.choicesHeight / 2;
+            this.ctx.fillText(this.quizData[this.quizIndex].choices[i], x ,y);
+        }
+    }
+
+    checkAnswer(userAnswer){
+        // 画面に表示されていない場合はスキップ
+        if(this.life === 0){return 0;}
+
+        let quiz = this.quizData[this.quizIndex];
+
+        if(quiz.choices[userAnswer] === quiz.answer){
+
+            // スコア計算(仮に1000点)
+            let addScore = 1000;
+
+            console.log('OK');
+
+            this.life = 0;
+            return  addScore;
+        } else {
+            console.log('not OK');
+            return 0;
+        }
     }
 
 }

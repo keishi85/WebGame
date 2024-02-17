@@ -140,7 +140,7 @@
         console.log(calcData);
         console.log(quizData);
 
-        // ブロックを初期化する(life = 0 で初期化)
+        // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
         }
@@ -166,14 +166,19 @@
         blockArray.map((v) => {
             v.update();
         });
-        // 数字キーの更新
-        numberKeyArray.map((v) => {
-            v.update();
-        });
-        // クイズの更新
-        quizInstance.update();
-        // 入力された数字の更新
-        drawInputNumber();
+        
+        if(quizInstance.life === 1){
+            // クイズの更新
+            quizInstance.update();
+        } else {
+            // 数字キーの更新
+            numberKeyArray.map((v) => {
+                v.update();
+            });
+             // 入力された数字の更新
+            drawInputNumber();
+        }
+       
         // スコアの更新
         drawScore();
         // 各プレイヤーの名前，順位，スコアを描画
@@ -249,11 +254,15 @@
 
         if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
             // クリックしたエリアが，上の解答可能エリアの時
-            ClickQuestionArea(x, y);
+            //ClickQuestionArea(x, y);
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            ClickKyeArea(x, y);
+            if(quizInstance.life === 1){
+                ClickChoicesArea(x, y);
+            } else {
+                ClickKyeArea(x, y);
+            }
         }
     }
 
@@ -299,22 +308,38 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
-                            // 選択中のブロックの解答をチェックする
-                            blockArray.map((v) => {
-                                if(v.selected === true){
-                                    score += v.checkAnswer(userAnswer);
+
+                            // 画面に表示されているブロックの解答をチェックする
+                            for(let i = 0; i < blockArray.length; ++i){
+                                // 正解かどうかの判定を行う「
+                                let judgement = blockArray[i].checkAnswer(userAnswer);
+                                if(judgement !== 0){
+                                    // スコアを加算
+                                    score += judgement;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
                                         getScores(playerName);
                                     });
+                                    break;
                                 }
-                            })
-                            console.log(type, userAnswer);
+                            }
+
+                            // blockArray.map((v) => {
+                            //     if(v.selected === true){
+                            //         score += v.checkAnswer(userAnswer);
+                            //         // 正解した場合，DBに反映
+                            //         // DBから各プレイヤーの名前とスコアを取得
+                            //         sendScore(playerName, score).then(() => {
+                            //             getScores(playerName);
+                            //         });
+                            //     }
+                            // })
+                            // console.log(type, userAnswer);
+
                             // 解答の入力をnullに戻す
                             inputNumber = null;
                         }
-                        console.log(type, inputNumber);
                         break;
                     case 'C':
                         // 解答の入力をnullに戻す
@@ -348,6 +373,18 @@
                         }
                         console.log(type, inputNumber);
                 }
+            }
+        }
+    }
+
+    function ClickChoicesArea(x, y){
+        
+        for(let i = 0; i < 4; ++i){
+            let position = quizInstance.choicesPosition[i];
+            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
+                console.log(i);
+                quizInstance.checkAnswer(i);
+                break;
             }
         }
     }
