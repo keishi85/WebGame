@@ -98,10 +98,15 @@
      */
     let quizInstance = null;
     /**
-     * DBから取得した名前とスコアを格納
+     * DBから取得した名前とスコアを格納{
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let scoresData = [];
+    /**
+     * クイズが落ちている最中かどうかのフラグ
+     * @type {boolean}
+     */
+    let quizDropping = false;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -149,8 +154,6 @@
 
         // クイズインスタンスの初期化
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
-
-        
     }
 
     /**
@@ -165,6 +168,19 @@
         blockArray.map((v) => {
             v.update();
         });
+
+        // score > 400 -> クイズを出題
+        if (score > 300 && !quizDropping){
+            quizInstance.life = 1;
+            quizDropping = true;
+            blockArray.map((v) => {
+                v.life = 0;
+            });
+        } else {
+            blockArray.map((v) => {
+                v.life = 1;
+            });
+        }
         
         if(quizInstance.life === 1){
             // クイズの更新
@@ -370,7 +386,7 @@
                             // 解答が入力されている時は，最後尾に追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                 }
             }
         }

@@ -370,9 +370,7 @@ class Quiz{
         //     y += lineHeight; // 次の行に移動
         // });
 
-        this.ctx.fillText(quiz.question, x, y);
-        
-        
+        this.ctx.fillText(quiz.question, x, y);      
     }
 
     /**
@@ -431,7 +429,7 @@ class Quiz{
         this.choicesPosition = [];
         for(let i = 0; i < 4; i++){
             this.choicesPosition[i] = new Position(position[i][0], position[i][1]);
-            console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
+            // console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
         }
         
 
