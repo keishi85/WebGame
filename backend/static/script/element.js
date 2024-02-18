@@ -108,6 +108,7 @@ class Block{
         if(this.position.y + this.radius > this.area){
             this.initialize();
             this.selected = false;
+            this.life = 0;
         }
 
         // 円の描画
@@ -134,6 +135,9 @@ class Block{
 
             // 初期化
             this.initialize();
+
+            // ライフはゼロにする
+            this.life = 0;
 
             // 選択を解除
             this.selected = false;
@@ -189,11 +193,12 @@ class Block{
         this.waitForQuiz = waitTime;
     }
     /**
-     * 物体オブジェクトが落ちているかを判定する
+     * ライフを設定する
      */
-    isFalling(){
-        return this.life > 0 && this.waitFrame <= 0;
+    setLife(life){
+        this.life = life;
     }
+    
 }
 
 /**
@@ -344,7 +349,7 @@ class Quiz{
         this.quizData = quizData;
         // this.quizIndex = Math.floor(Math.random() * this.quizData.length);
         this.setChoicesPosition();
-        this.waitTime = 15;  // 0~5秒のランダムな待ち時間
+        this.waitTime = 1500;  // 0~5秒のランダムな待ち時間
         this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
     }
      /**

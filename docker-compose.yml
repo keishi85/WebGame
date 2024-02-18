@@ -13,7 +13,6 @@ services:
           - ./db:/data/db
           - ./configdb:/data/configdb
 
-
   app:
       build: ./backend/
       ports:

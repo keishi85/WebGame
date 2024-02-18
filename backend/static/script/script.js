@@ -186,6 +186,11 @@
         if (calcSolvedCount % 2 === 0 && calcSolvedCount !== 0) {
             swichQuestion();
             calcSolvedCount = 0;
+        } else if (calcSolvedCount < 2) {
+            // 計算問題が出題されるようにする
+            blockArray.map((v) => {
+                v.setLife(1);
+            });
         } 
         
         if(quizArray[quizIndex].life === 1){
@@ -408,6 +413,9 @@
                 break;
             }
         }
+        if (quizIndex + 1 < quizArray.length){
+            quizIndex++;    
+        }
     }
 
     /**
@@ -544,7 +552,7 @@
         // クイズ問題に切り替え
         quizArray[quizIndex].life = 1;
         blockArray.map((v) => {
-            v.setWaitForQuiz(10);
+            v.setWaitForQuiz(0);
         });
     }  
 })();
