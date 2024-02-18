@@ -98,15 +98,25 @@
      */
     let quizInstance = null;
     /**
+     * ブロックのインスタンスを格納する配列
+     * @type {Array<Quiz>}
+     */
+    let quizArray = [];
+    /**
      * DBから取得した名前とスコアを格納{
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let scoresData = [];
     /**
-     * クイズが落ちている最中かどうかのフラグ
-     * @type {boolean}
+     * 計算問題に回答した数をカウントする変数
+     * @type {number}
      */
-    let quizDropping = false;
+    let calcSolvedCount = 0;
+    /**
+     * クイズを格納する配列のインデックス
+     * @type {number}
+     */
+    let quizIndex = 0;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -141,8 +151,8 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
-        console.log(calcData);
-        console.log(quizData);
+        // console.log(calcData);
+        // console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
@@ -153,7 +163,10 @@
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+        for (let i = 0; i < quizData.length; ++i) {
+            console.log(quizData[i]);
+            quizArray[i] = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData[i]);
+        }
     }
 
     /**
@@ -169,22 +182,15 @@
             v.update();
         });
 
-        // score > 400 -> クイズを出題
-        if (score > 300 && !quizDropping){
-            quizInstance.life = 1;
-            quizDropping = true;
-            blockArray.map((v) => {
-                v.life = 0;
-            });
-        } else {
-            blockArray.map((v) => {
-                v.life = 1;
-            });
-        }
+        // 計算問題を5問正解するごとにクイズ問題に切り替え
+        if (calcSolvedCount % 2 === 0 && calcSolvedCount !== 0) {
+            swichQuestion();
+            calcSolvedCount = 0;
+        } 
         
-        if(quizInstance.life === 1){
+        if(quizArray[quizIndex].life === 1){
             // クイズの更新
-            quizInstance.update();
+            quizArray[quizIndex].update();
         } else {
             // 数字キーの更新
             numberKeyArray.map((v) => {
@@ -253,8 +259,6 @@
      */
     function ClickOrTouch(event) {
         let x, y;
-
-        
         if(event.type === 'click'){
             // クリックの時
             x = event.pageX - canvas.offsetLeft;
@@ -273,7 +277,7 @@
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            if(quizInstance.life === 1){
+            if(quizArray[quizIndex].life === 1){
                 ClickChoicesArea(x, y);
             } else {
                 ClickKyeArea(x, y);
@@ -331,6 +335,8 @@
                                 if(judgement !== 0){
                                     // スコアを加算
                                     score += judgement;
+                                    // 回答した数をインクリメンt
+                                    calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
@@ -359,14 +365,14 @@
                     case 'C':
                         // 解答の入力をnullに戻す
                         inputNumber = null;
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '-':
                         // 解答が未入力の時，先頭にマイナスをつける
                         if (inputNumber === null) {
                             inputNumber = type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '.':
                         if (inputNumber === null) {
@@ -376,7 +382,7 @@
                             // 解答が入力済みの時，最後尾に小数点を追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     default:
                         if (inputNumber === null || inputNumber === '0') {
@@ -395,10 +401,10 @@
     function ClickChoicesArea(x, y){
         
         for(let i = 0; i < 4; ++i){
-            let position = quizInstance.choicesPosition[i];
-            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
+            let position = quizArray[quizIndex].choicesPosition[i];
+            if(position.x < x && position.x + quizArray[quizIndex].choicesWidth > x && position.y < y && position.y + quizArray[quizIndex].choicesHeight > y){
                 console.log(i);
-                quizInstance.checkAnswer(i);
+                quizArray[quizIndex].checkAnswer(i);
                 break;
             }
         }
@@ -530,8 +536,15 @@
             
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
-        });
-        
+        }); 
     }
-    
+
+    // 計算問題とクイズ問題を切り替える
+    function swichQuestion(){
+        // クイズ問題に切り替え
+        quizArray[quizIndex].life = 1;
+        blockArray.map((v) => {
+            v.setWaitForQuiz(10);
+        });
+    }  
 })();
