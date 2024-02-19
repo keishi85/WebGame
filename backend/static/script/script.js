@@ -97,11 +97,11 @@
      * @type {Quiz}
      */
     let quizInstance = null;
-    /**
-     * ブロックのインスタンスを格納する配列
-     * @type {Array<Quiz>}
-     */
-    let quizArray = [];
+    // /**
+    //  * ブロックのインスタンスを格納する配列
+    //  * @type {Array<Quiz>}
+    //  */
+    // let quizArray = [];
     /**
      * DBから取得した名前とスコアを格納{
      * @type {Array<{ question: string, choices: string[], answer: string }>}
@@ -112,11 +112,21 @@
      * @type {number}
      */
     let calcSolvedCount = 0;
+    // /**
+    //  * クイズを格納する配列のインデックス
+    //  * @type {number}
+    //  */
+    // let quizIndex = 0;
     /**
-     * クイズを格納する配列のインデックス
+     * この数の計算問題を解いた後にクイズが出る
      * @type {number}
      */
-    let quizIndex = 0;
+    const CHANGE_CALCULATION_QUESTION = 2;
+    /**
+     * 出る問題の種類を表す変数(Calculation or Quiz)
+     * @type {string}
+     */
+    let questionType = 'Calculation';
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -156,17 +166,18 @@
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT);
         }
 
         // 数字キーの初期化
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        for (let i = 0; i < quizData.length; ++i) {
-            console.log(quizData[i]);
-            quizArray[i] = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData[i]);
-        }
+        // for (let i = 0; i < quizData.length; ++i) {
+        //     console.log(quizData[i]);
+        //     quizArray[i] = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData[i]);
+        // }
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
     }
 
     /**
@@ -180,22 +191,34 @@
         // ブロックの更新
         blockArray.map((v) => {
             v.update();
+            if(questionType === 'Calculation'){
+                v.resetLife();
+            }
         });
 
-        // 計算問題を5問正解するごとにクイズ問題に切り替え
-        if (calcSolvedCount % 2 === 0 && calcSolvedCount !== 0) {
-            swichQuestion();
+        // // 計算問題を5問正解するごとにクイズ問題に切り替え
+        // if (calcSolvedCount % 2 === 0 && calcSolvedCount !== 0) {
+        //     swichQuestion();
+        //     calcSolvedCount = 0;
+        // } else if (calcSolvedCount < 2) {
+        //     // 計算問題が出題されるようにする
+        //     blockArray.map((v) => {
+        //         v.setLife(1);
+        //     });
+        // } 
+
+        if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
+            questionType = 'Quiz';
+            quizInstance.life = 1;
             calcSolvedCount = 0;
-        } else if (calcSolvedCount < 2) {
-            // 計算問題が出題されるようにする
-            blockArray.map((v) => {
-                v.setLife(1);
-            });
-        } 
+        }
         
-        if(quizArray[quizIndex].life === 1){
+        if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
             // クイズの更新
-            quizArray[quizIndex].update();
+            quizInstance.update();
+            if(quizInstance.life === 0){
+                questionType = "Calculation";
+            }
         } else {
             // 数字キーの更新
             numberKeyArray.map((v) => {
@@ -204,6 +227,27 @@
              // 入力された数字の更新
             drawInputNumber();
         }
+
+        // if(quizInstance.life === 1){
+        //     if(blockArray.every(block => block.life === 0)){
+        //         // クイズの更新
+        //         quizInstance.update();
+        //     }
+        // } else {
+        //     questionType = 'Calculation';
+        //     // 数字キーの更新
+        //     numberKeyArray.map((v) => {
+        //         v.update();
+        //     });
+        //      // 入力された数字の更新
+        //     drawInputNumber();
+        // }
+
+        // if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
+        //     quizInstance.life = 1;
+        // }
+
+      
        
         // スコアの更新
         drawScore();
@@ -282,7 +326,7 @@
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            if(quizArray[quizIndex].life === 1){
+            if(quizInstance.life === 1){
                 ClickChoicesArea(x, y);
             } else {
                 ClickKyeArea(x, y);
@@ -403,18 +447,24 @@
         }
     }
 
+    /**
+     * 選択肢をクリックしたときの判定
+     * @param {number} x 
+     * @param {number} y 
+     */
     function ClickChoicesArea(x, y){
         
         for(let i = 0; i < 4; ++i){
-            let position = quizArray[quizIndex].choicesPosition[i];
-            if(position.x < x && position.x + quizArray[quizIndex].choicesWidth > x && position.y < y && position.y + quizArray[quizIndex].choicesHeight > y){
+            let position = quizInstance.choicesPosition[i];
+            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
                 console.log(i);
-                quizArray[quizIndex].checkAnswer(i);
+                // 正解時はスコア加算
+                let judgement = quizInstance.checkAnswer(i);
+                if(judgement !== 0){
+                    score += judgement;
+                }
                 break;
             }
-        }
-        if (quizIndex + 1 < quizArray.length){
-            quizIndex++;    
         }
     }
 
