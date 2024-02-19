@@ -84,6 +84,11 @@
     let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
+     * @type {Array<{ question: string, answer: string }>}
+     */
+    let calcData = [];
+    /**
+     * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let quizData = [];
@@ -93,10 +98,25 @@
      */
     let quizInstance = null;
     /**
-     * DBから取得した名前とスコアを格納
+     * ブロックのインスタンスを格納する配列
+     * @type {Array<Quiz>}
+     */
+    let quizArray = [];
+    /**
+     * DBから取得した名前とスコアを格納{
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let scoresData = [];
+    /**
+     * 計算問題に回答した数をカウントする変数
+     * @type {number}
+     */
+    let calcSolvedCount = 0;
+    /**
+     * クイズを格納する配列のインデックス
+     * @type {number}
+     */
+    let quizIndex = 0;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -116,7 +136,6 @@
 
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
-        //canvas.addEventListener('touchstart', ClickOrTouch);
         document.addEventListener('DOMContentLoaded', getDB);
 
 
@@ -132,6 +151,8 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
+        // console.log(calcData);
+        // console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
@@ -142,9 +163,10 @@
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
-
-        
+        for (let i = 0; i < quizData.length; ++i) {
+            console.log(quizData[i]);
+            quizArray[i] = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData[i]);
+        }
     }
 
     /**
@@ -159,10 +181,21 @@
         blockArray.map((v) => {
             v.update();
         });
+
+        // 計算問題を5問正解するごとにクイズ問題に切り替え
+        if (calcSolvedCount % 2 === 0 && calcSolvedCount !== 0) {
+            swichQuestion();
+            calcSolvedCount = 0;
+        } else if (calcSolvedCount < 2) {
+            // 計算問題が出題されるようにする
+            blockArray.map((v) => {
+                v.setLife(1);
+            });
+        } 
         
-        if(quizInstance.life === 1){
+        if(quizArray[quizIndex].life === 1){
             // クイズの更新
-            quizInstance.update();
+            quizArray[quizIndex].update();
         } else {
             // 数字キーの更新
             numberKeyArray.map((v) => {
@@ -231,8 +264,6 @@
      */
     function ClickOrTouch(event) {
         let x, y;
-
-        
         if(event.type === 'click'){
             // クリックの時
             x = event.pageX - canvas.offsetLeft;
@@ -251,7 +282,7 @@
         }
         else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
             // クリックしたエリアが，下の数字キーのエリアの時
-            if(quizInstance.life === 1){
+            if(quizArray[quizIndex].life === 1){
                 ClickChoicesArea(x, y);
             } else {
                 ClickKyeArea(x, y);
@@ -309,6 +340,8 @@
                                 if(judgement !== 0){
                                     // スコアを加算
                                     score += judgement;
+                                    // 回答した数をインクリメンt
+                                    calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
@@ -337,14 +370,14 @@
                     case 'C':
                         // 解答の入力をnullに戻す
                         inputNumber = null;
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '-':
                         // 解答が未入力の時，先頭にマイナスをつける
                         if (inputNumber === null) {
                             inputNumber = type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '.':
                         if (inputNumber === null) {
@@ -354,7 +387,7 @@
                             // 解答が入力済みの時，最後尾に小数点を追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     default:
                         if (inputNumber === null || inputNumber === '0') {
@@ -364,7 +397,7 @@
                             // 解答が入力されている時は，最後尾に追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                 }
             }
         }
@@ -373,12 +406,15 @@
     function ClickChoicesArea(x, y){
         
         for(let i = 0; i < 4; ++i){
-            let position = quizInstance.choicesPosition[i];
-            if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
+            let position = quizArray[quizIndex].choicesPosition[i];
+            if(position.x < x && position.x + quizArray[quizIndex].choicesWidth > x && position.y < y && position.y + quizArray[quizIndex].choicesHeight > y){
                 console.log(i);
-                quizInstance.checkAnswer(i);
+                quizArray[quizIndex].checkAnswer(i);
                 break;
             }
+        }
+        if (quizIndex + 1 < quizArray.length){
+            quizIndex++;    
         }
     }
 
@@ -415,20 +451,30 @@
         const questionsData = JSON.parse(questionsContainer.getAttribute('data-questions'));
 
         // 取得したデータを使用してDOMを更新
-        questionsData.forEach((item, index) => {
-
-            console.log(`問題 ${index + 1}: ${item.question}, 選択肢1: ${item.choice1}, 選択肢2: ${item.choice2}, 選択肢3: ${item.choice3}, 選択肢4: ${item.choice4}, 答え: ${item.answer}`);
-
-             // 選択肢を配列にまとめる
-            let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
-            
-            // 問題オブジェクトを作成して配列に追加する
-            let questionObject = {
-                question: item.question,
-                choices: choices,
-                answer: item.answer
-            };
-            quizData.push(questionObject);
+        questionsData.forEach((item) => {
+            if (item.type === 'quiz') {
+                // 選択肢を配列にまとめる
+                let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
+                
+                // 問題オブジェクトを作成して配列に追加する
+                let questionObject = {
+                    question: item.question,
+                    choices: choices,
+                    answer: item.answer
+                };
+                quizData.push(questionObject);
+            }
+            else if (item.type === 'calculation') {
+                // 問題オブジェクトを作成してcalcData配列に追加する
+                let questionObject = {
+                    question: item.problem, // 'problem'フィールドを使用
+                    answer: item.answer
+                };
+                calcData.push(questionObject);
+            }  
+            else {
+                console.error('Invalid question type' + item.type);
+            }
         });
     }
 
@@ -498,8 +544,15 @@
             
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
-        });
-        
+        }); 
     }
-    
+
+    // 計算問題とクイズ問題を切り替える
+    function swichQuestion(){
+        // クイズ問題に切り替え
+        quizArray[quizIndex].life = 1;
+        blockArray.map((v) => {
+            v.setWaitForQuiz(0);
+        });
+    }  
 })();

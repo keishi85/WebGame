@@ -50,6 +50,7 @@ class Block{
         this.question = new Question();
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
         this.selected = false;  // 選択されているかどうか
     }
 
@@ -93,7 +94,7 @@ class Block{
     update(){
         // ブロックのライフが0以下(非生存)の場合何もしない
         if(this.life <= 0){return;}
-
+        
         // 待機時間を減らす
         if (this.waitFrame > 0) {
             this.waitFrame -= 1;
@@ -107,6 +108,7 @@ class Block{
         if(this.position.y + this.radius > this.area){
             this.initialize();
             this.selected = false;
+            this.life = 0;
         }
 
         // 円の描画
@@ -133,6 +135,9 @@ class Block{
 
             // 初期化
             this.initialize();
+
+            // ライフはゼロにする
+            this.life = 0;
 
             // 選択を解除
             this.selected = false;
@@ -177,10 +182,23 @@ class Block{
      */
     initialize(){
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
-        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
         this.position.set(this.initialPosition.x, this.initialPosition.y);
         this.question = new Question();
     }
+    /**
+     * クイズが出題されている間の待ち時間を設定する
+     */
+    setWaitForQuiz(waitTime){
+        this.waitForQuiz = waitTime;
+    }
+    /**
+     * ライフを設定する
+     */
+    setLife(life){
+        this.life = life;
+    }
+    
 }
 
 /**
@@ -303,7 +321,6 @@ class NumberKey{
     }
 }
 
-
 /**
  * クイズの管理をするクラス
  */
@@ -330,9 +347,10 @@ class Quiz{
         this.color = color;
         this.speed = 0.5;
         this.quizData = quizData;
-        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
-
+        // this.quizIndex = Math.floor(Math.random() * this.quizData.length);
         this.setChoicesPosition();
+        this.waitTime = 1500;  // 0~5秒のランダムな待ち時間
+        this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
     }
      /**
      * ブロックを描画する
@@ -348,7 +366,7 @@ class Quiz{
         this.ctx.font = '20px Arial';
         this.ctx.textAlign = "center";
 
-        let quiz = this.quizData[this.quizIndex];
+        let quiz = this.quizData;
         // let lines = [
         //     quiz.question,
         //     `1: ${quiz.choices[0]}`,
@@ -365,9 +383,7 @@ class Quiz{
         //     y += lineHeight; // 次の行に移動
         // });
 
-        this.ctx.fillText(quiz.question, x, y);
-        
-        
+        this.ctx.fillText(quiz.question, x, y);      
     }
 
     /**
@@ -376,6 +392,12 @@ class Quiz{
     update(){
         // ブロックのライフが0以下(非生存)の場合何もしない
         if(this.life <= 0){return;}
+
+        // 待機時間を減らす
+        if (this.waitFrame > 0) {
+            this.waitFrame -= 1;
+            return; // 待機時間中は以下の更新処理をスキップ
+        }
 
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
@@ -395,7 +417,7 @@ class Quiz{
      * @return {number} 
      */
     checkAnswer(userAnswer){
-        if(userAnswer === this.quizData[this.index].answer){
+        if(userAnswer === this.quizData.answer){
 
             // 正解した位置に応じてスコア計算
             let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
@@ -412,7 +434,8 @@ class Quiz{
 
     // クイズをセットする
     setQUiz(){
-        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+        // this.quizIndex = Math.floor(Math.random() * this.quizData.length);
+        // this.quizIndex = 0;
     }
 
     /**
@@ -426,10 +449,9 @@ class Quiz{
         this.choicesPosition = [];
         for(let i = 0; i < 4; i++){
             this.choicesPosition[i] = new Position(position[i][0], position[i][1]);
-            console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
+            // console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
         }
         
-
         // 4つの選択肢の矩形サイズ
         this.choicesWidth = 160;
         this.choicesHeight = 80;
@@ -452,7 +474,7 @@ class Quiz{
             this.ctx.textAlign = "center";
             let x = this.choicesPosition[i].x + this.choicesWidth / 2;
             let y = this.choicesPosition[i].y + this.choicesHeight / 2;
-            this.ctx.fillText(this.quizData[this.quizIndex].choices[i], x ,y);
+            this.ctx.fillText(this.quizData.choices[i], x ,y);
         }
     }
 
@@ -460,7 +482,7 @@ class Quiz{
         // 画面に表示されていない場合はスキップ
         if(this.life === 0){return 0;}
 
-        let quiz = this.quizData[this.quizIndex];
+        let quiz = this.quizData;
 
         if(quiz.choices[userAnswer] === quiz.answer){
 
