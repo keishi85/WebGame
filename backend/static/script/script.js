@@ -121,7 +121,7 @@
      * この数の計算問題を解いた後にクイズが出る
      * @type {number}
      */
-    const CHANGE_CALCULATION_QUESTION = 2;
+    const CHANGE_CALCULATION_QUESTION = 5;
     /**
      * 出る問題の種類を表す変数(Calculation or Quiz)
      * @type {string}
