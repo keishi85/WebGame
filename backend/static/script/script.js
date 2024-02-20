@@ -84,6 +84,11 @@
     let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
+     * @type {Array<{ question: string, answer: string }>}
+     */
+    let calcData = [];
+    /**
+     * DBから取得した問題を管理する変数
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let quizData = [];
@@ -93,10 +98,25 @@
      */
     let quizInstance = null;
     /**
-     * DBから取得した名前とスコアを格納
+     * DBから取得した名前とスコアを格納{
      * @type {Array<{ question: string, choices: string[], answer: string }>}
      */
     let scoresData = [];
+    /**
+     * 計算問題に回答した数をカウントする変数
+     * @type {number}
+     */
+    let calcSolvedCount = 0;
+    /**
+     * この数の計算問題を解いた後にクイズが出る
+     * @type {number}
+     */
+    const CHANGE_CALCULATION_QUESTION = 5;
+    /**
+     * 出る問題の種類を表す変数(Calculation or Quiz)
+     * @type {string}
+     */
+    let questionType = 'Calculation';
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -116,7 +136,6 @@
 
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
-        canvas.addEventListener('touchstart', ClickOrTouch);
         document.addEventListener('DOMContentLoaded', getDB);
 
 
@@ -132,10 +151,12 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
+        // console.log(calcData);
+        // console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 1, canvas.height - KEYPAD_HEIGHT);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT);
         }
 
         // 数字キーの初期化
@@ -143,8 +164,6 @@
 
         // クイズインスタンスの初期化
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
-
-        
     }
 
     /**
@@ -155,14 +174,32 @@
         util.drawRect(0, 0, canvas.width, canvas.height, '#ffffff');
         // 数字キーのエリアの描画
         util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#ff0000');
-        // ブロックの更新
+        // 計算問題ブロックの更新
         blockArray.map((v) => {
             v.update();
+            if(questionType === 'Calculation'){
+                v.resetLife();
+            }
         });
+
+        // 計算問題から，クイズへの切り替え
+        if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
+            questionType = 'Quiz';
+            quizInstance.life = 1;
+            calcSolvedCount = 0;
+        }
         
-        if(quizInstance.life === 1){
+        // 計算問題 or クイズの更新
+        if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
             // クイズの更新
             quizInstance.update();
+            // クイズから計算問題へ切り替え
+            if(quizInstance.life === 0){
+                questionType = "Calculation";
+                blockArray.map((v) => {
+                    v.initialize();
+                });
+            }
         } else {
             // 数字キーの更新
             numberKeyArray.map((v) => {
@@ -170,10 +207,10 @@
             });
              // 入力された数字の更新
             drawInputNumber();
-        }
+        }      
        
         // スコアの更新
-        drawScore();
+        //drawScore();
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
@@ -231,8 +268,6 @@
      */
     function ClickOrTouch(event) {
         let x, y;
-
-        
         if(event.type === 'click'){
             // クリックの時
             x = event.pageX - canvas.offsetLeft;
@@ -245,41 +280,16 @@
             y = touch.pageY - canvas.offsetTop;
         }
 
-        if(x > 0 && x < CANVAS_WIDTH && y > 0 && y < CANVAS_HEIGHT - KEYPAD_HEIGHT){
-            // クリックしたエリアが，上の解答可能エリアの時
-            //ClickQuestionArea(x, y);
+       
+    
+        if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
+            // クイズの時
+            ClickChoicesArea(x, y);
+        } else {
+            // 計算問題の時
+            ClickKyeArea(x, y);
         }
-        else if(x > 0 && x < CANVAS_WIDTH && y > CANVAS_HEIGHT - KEYPAD_HEIGHT && y < CANVAS_HEIGHT){
-            // クリックしたエリアが，下の数字キーのエリアの時
-            if(quizInstance.life === 1){
-                ClickChoicesArea(x, y);
-            } else {
-                ClickKyeArea(x, y);
-            }
-        }
-    }
-
-    /**
-     * 上の解答可能エリアをクリックした時の判定
-     * @param {number} x - クリックされたX座標 
-     * @param {number} y - クリックされたY座標
-     */
-    function ClickQuestionArea(x,y){
-        // クリックした位置がブロックの円の中にあるかどうかの判定
-        for(let i = 0; i < blockArray.length; ++i){
-            // 円の中心とクリック座標の距離を計算
-            let distance = Math.sqrt((x - blockArray[i].position.x) ** 2 + (y - blockArray[i].position.y) ** 2);
-            // 距離が半径より小さいかどうか判定．1つ見つけたらループを抜ける
-            if(distance <= blockArray[i].radius){
-                blockArray.map((v) => {
-                    v.selected = false;
-                })
-                // 選択中のブロックに設定する
-                blockArray[i].selected = true;
-                console.log(blockArray[i].question.answer);
-                break;
-            }
-        }
+        
     }
 
     /**
@@ -309,6 +319,8 @@
                                 if(judgement !== 0){
                                     // スコアを加算
                                     score += judgement;
+                                    // 回答した数をインクリメンt
+                                    calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
                                     sendScore(playerName, score).then(() => {
@@ -318,18 +330,6 @@
                                 }
                             }
 
-                            // blockArray.map((v) => {
-                            //     if(v.selected === true){
-                            //         score += v.checkAnswer(userAnswer);
-                            //         // 正解した場合，DBに反映
-                            //         // DBから各プレイヤーの名前とスコアを取得
-                            //         sendScore(playerName, score).then(() => {
-                            //             getScores(playerName);
-                            //         });
-                            //     }
-                            // })
-                            // console.log(type, userAnswer);
-
                             // 解答の入力をnullに戻す
                             inputNumber = null;
                         }
@@ -337,14 +337,14 @@
                     case 'C':
                         // 解答の入力をnullに戻す
                         inputNumber = null;
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '-':
                         // 解答が未入力の時，先頭にマイナスをつける
                         if (inputNumber === null) {
                             inputNumber = type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     case '.':
                         if (inputNumber === null) {
@@ -354,7 +354,7 @@
                             // 解答が入力済みの時，最後尾に小数点を追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                         break;
                     default:
                         if (inputNumber === null || inputNumber === '0') {
@@ -364,19 +364,28 @@
                             // 解答が入力されている時は，最後尾に追加
                             inputNumber += type;
                         }
-                        console.log(type, inputNumber);
+                        // console.log(type, inputNumber);
                 }
             }
         }
     }
 
+    /**
+     * 選択肢をクリックしたときの判定
+     * @param {number} x 
+     * @param {number} y 
+     */
     function ClickChoicesArea(x, y){
         
         for(let i = 0; i < 4; ++i){
             let position = quizInstance.choicesPosition[i];
             if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
                 console.log(i);
-                quizInstance.checkAnswer(i);
+                // 正解時はスコア加算
+                let judgement = quizInstance.checkAnswer(i);
+                if(judgement !== 0){
+                    score += judgement;
+                }
                 break;
             }
         }
@@ -396,17 +405,6 @@
     }
 
     /**
-     * スコアの描画をする
-     */
-    function drawScore(){
-        // テキストの描画
-        ctx.fillStyle = '#000000';
-        ctx.font = '20px Arial';
-        ctx.textAlign = "left";
-        ctx.fillText(`SCORE:${score}`,50, 390); 
-    }
-
-    /**
      * DBから問題を取得
      */
     function getDB(){
@@ -415,20 +413,30 @@
         const questionsData = JSON.parse(questionsContainer.getAttribute('data-questions'));
 
         // 取得したデータを使用してDOMを更新
-        questionsData.forEach((item, index) => {
-
-            console.log(`問題 ${index + 1}: ${item.question}, 選択肢1: ${item.choice1}, 選択肢2: ${item.choice2}, 選択肢3: ${item.choice3}, 選択肢4: ${item.choice4}, 答え: ${item.answer}`);
-
-             // 選択肢を配列にまとめる
-            let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
-            
-            // 問題オブジェクトを作成して配列に追加する
-            let questionObject = {
-                question: item.question,
-                choices: choices,
-                answer: item.answer
-            };
-            quizData.push(questionObject);
+        questionsData.forEach((item) => {
+            if (item.type === 'quiz') {
+                // 選択肢を配列にまとめる
+                let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
+                
+                // 問題オブジェクトを作成して配列に追加する
+                let questionObject = {
+                    question: item.question,
+                    choices: choices,
+                    answer: item.answer
+                };
+                quizData.push(questionObject);
+            }
+            else if (item.type === 'calculation') {
+                // 問題オブジェクトを作成してcalcData配列に追加する
+                let questionObject = {
+                    question: item.problem, // 'problem'フィールドを使用
+                    answer: item.answer
+                };
+                calcData.push(questionObject);
+            }  
+            else {
+                console.error('Invalid question type' + item.type);
+            }
         });
     }
 
@@ -483,7 +491,12 @@
             const rankText = `${player.rank}位`;
             const nameText = `${player.name}`;
             const scoreText = `${player.score}点`;
-            
+
+            // フォント等を設定
+            ctx.fillStyle = '#000000';
+            ctx.font = '20px Arial';
+            ctx.textAlign = "center";
+
             // 順位を描画
             ctx.fillText(rankText, x, y);
             
@@ -498,8 +511,7 @@
             
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
-        });
-        
+        }); 
     }
-    
+
 })();

@@ -50,7 +50,8 @@ class Block{
         this.question = new Question();
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
-        this.selected = false;  // 選択されているかどうか
+        this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
+        // this.selected = false;  // 選択されているかどうか
     }
 
     /**
@@ -92,12 +93,10 @@ class Block{
      */
     update(){
         // ブロックのライフが0以下(非生存)の場合何もしない
-        if(this.life <= 0){return;}
-
-        // 待機時間を減らす
-        if (this.waitFrame > 0) {
+        if(this.life === 0){
+            // 待機時間を減らす
             this.waitFrame -= 1;
-            return; // 待機時間中は以下の更新処理をスキップ
+            return;
         }
 
         // 下に進める(y座標を進める)
@@ -106,12 +105,13 @@ class Block{
         // 解答可能エリア外に移動したら初期化を行う
         if(this.position.y + this.radius > this.area){
             this.initialize();
-            this.selected = false;
+            // this.selected = false;
+            this.life = 0;
         }
 
         // 円の描画
         this.draw();
-        this.drawSelectedSignal();
+        // this.drawSelectedSignal();
     }
 
     /**
@@ -124,7 +124,7 @@ class Block{
         if(this.life === 0){return 0;}
 
         if(userAnswer === this.question.answer){
-            // 再度待機時間を設定　
+            // 再度待機時間を設定
             this.waitTime = Math.random() * 5;  
             this.waitFrame = this.waitTime * 60; 
 
@@ -134,8 +134,11 @@ class Block{
             // 初期化
             this.initialize();
 
-            // 選択を解除
-            this.selected = false;
+            // ライフはゼロにする
+            this.life = 0;
+
+            // // 選択を解除
+            //this.selected = false;
             console.log('OK');
             return  addScore;
         } else {
@@ -144,31 +147,32 @@ class Block{
         }
     }
 
-    /**
-     * 選択されている時に円の枠線をつける
-     */
-    drawSelectedSignal(){
-        if(this.selected === false){return;}
+    // /**
+    //  * 選択されている時に円の枠線をつける
+    //  */
+    // drawSelectedSignal(){
+    //     if(this.selected === false){return;}
 
-        // パスの設定を開始することを明示する
-        this.ctx.beginPath();
-        // 円のパスを設定する
-        this.ctx.arc(
-            this.position.x,
-            this.position.y,
-            this.radius,
-            0.0,
-            Math.PI * 2.0
-        );
-        // 円の色を設定する
-        this.ctx.strokeStyle = '#000000';
-        // 線の太さを設定
-        this.ctx.lineWidth = 3;
-        // パスを閉じることを明示する
-        this.ctx.closePath();
-        // 設定したパスで円の描画を行う
-        this.ctx.stroke();
-    }
+    //     // パスの設定を開始することを明示する
+    //     this.ctx.beginPath();
+    //     // 円のパスを設定する
+    //     this.ctx.arc(
+    //         this.position.x,
+    //         this.position.y,
+    //         this.radius,
+    //         0.0,
+    //         Math.PI * 2.0
+    //     );
+    //     // 円の色を設定する
+    //     this.ctx.strokeStyle = '#000000';
+    //     // 線の太さを設定
+    //     this.ctx.lineWidth = 3;
+    //     // パスを閉じることを明示する
+    //     this.ctx.closePath();
+    //     // 設定したパスで円の描画を行う
+    //     this.ctx.stroke();
+    // }
+
     /**
      * 問題が回答された場合，もしくは回答できなかった場合に次の問題を設定する
      * 1.  wait timeを設定
@@ -177,10 +181,20 @@ class Block{
      */
     initialize(){
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
-        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
         this.position.set(this.initialPosition.x, this.initialPosition.y);
         this.question = new Question();
     }
+
+    /**
+     * ライフを1に設定する
+     */
+    resetLife(){
+        if(this.waitFrame < 0){
+            this.life = 1;
+        }
+    }
+    
 }
 
 /**
@@ -303,7 +317,6 @@ class NumberKey{
     }
 }
 
-
 /**
  * クイズの管理をするクラス
  */
@@ -322,6 +335,7 @@ class Quiz{
      */
     constructor(ctx, x, y, width, height, life, area, quizData, color = '#0000ff'){
         this.ctx = ctx;
+        this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.width = width;
         this.height = height
@@ -330,8 +344,7 @@ class Quiz{
         this.color = color;
         this.speed = 0.5;
         this.quizData = quizData;
-        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
-
+        this.quizIndex = 0;
         this.setChoicesPosition();
     }
      /**
@@ -349,25 +362,11 @@ class Quiz{
         this.ctx.textAlign = "center";
 
         let quiz = this.quizData[this.quizIndex];
-        // let lines = [
-        //     quiz.question,
-        //     `1: ${quiz.choices[0]}`,
-        //     `2: ${quiz.choices[1]}`,
-        //     `3: ${quiz.choices[2]}`,
-        //     `4: ${quiz.choices[3]}`
-        // ];
-    
-        // let lineHeight = 15; // ラインの高さ
+        
+        // 問題文を表示
         let x = this.position.x;
         let y = this.position.y + 5;
-        // lines.forEach(line => {
-        //     this.ctx.fillText(line, x, y);
-        //     y += lineHeight; // 次の行に移動
-        // });
-
-        this.ctx.fillText(quiz.question, x, y);
-        
-        
+        this.ctx.fillText(quiz.question, x, y);      
     }
 
     /**
@@ -375,7 +374,7 @@ class Quiz{
      */
     update(){
         // ブロックのライフが0以下(非生存)の場合何もしない
-        if(this.life <= 0){return;}
+        if(this.life === 0){return;}
 
         // 下に進める(y座標を進める)
         this.position.y += this.speed;
@@ -383,36 +382,16 @@ class Quiz{
         // 解答可能エリア外に移動したらライフ0
         if(this.position.y + this.height / 2 > this.area){
             this.life = 0;
+            // 次の問題にインデックスを移動
+            this.quizIndex += 1;
+            // 初期位置に移動
+            this.position.set(this.initialPosition.x, this.initialPosition.y);
+
+            return;
         }
 
         this.draw();
         this.drawChoices();
-    }
-
-    /**
-     * 入力された解答をチェックする
-     * @param {number} userAnswer 
-     * @return {number} 
-     */
-    checkAnswer(userAnswer){
-        if(userAnswer === this.quizData[this.index].answer){
-
-            // 正解した位置に応じてスコア計算
-            let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
-
-            // 選択を解除
-            this.selected = false;
-            console.log('OK');
-            return  addScore;
-        } else {
-            console.log('not OK');
-            return 0;
-        }
-    }
-
-    // クイズをセットする
-    setQUiz(){
-        this.quizIndex = Math.floor(Math.random() * this.quizData.length);
     }
 
     /**
@@ -426,10 +405,9 @@ class Quiz{
         this.choicesPosition = [];
         for(let i = 0; i < 4; i++){
             this.choicesPosition[i] = new Position(position[i][0], position[i][1]);
-            console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
+            // console.log(this.choicesPosition[i].x, this.choicesPosition[i].y);
         }
         
-
         // 4つの選択肢の矩形サイズ
         this.choicesWidth = 160;
         this.choicesHeight = 80;
@@ -456,6 +434,11 @@ class Quiz{
         }
     }
 
+    /**
+     * 入力された解答をチェックする
+     * @param {number} userAnswer 
+     * @returns {number}
+     */
     checkAnswer(userAnswer){
         // 画面に表示されていない場合はスキップ
         if(this.life === 0){return 0;}
@@ -468,8 +451,14 @@ class Quiz{
             let addScore = 1000;
 
             console.log('OK');
-
+            
+            //ライフを0に
             this.life = 0;
+            // 次の問題にインデックスを移動
+            this.quizIndex += 1
+            // 初期位置に移動
+            this.position.set(this.initialPosition.x, this.initialPosition.y);
+
             return  addScore;
         } else {
             console.log('not OK');
