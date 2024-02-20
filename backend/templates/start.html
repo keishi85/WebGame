@@ -16,8 +16,44 @@
             <button type="button" id="startGame" class="mochiy-pop-one-regular">ゲームスタート</button>
         </form>
     </div>
-    <canvas id="gameCanvas" width="500" height="500"></canvas>
+    
+    <!-- ゲームのルールを説明するセクション -->
+    <div class="game-rules-container">
+        <h2>ゲームのルール</h2>
+        <ul>
+            計算問題とクイズを正解して得点を稼ぐゲームです<br>
+            得点は回答するまでの速度と問題のレベル(果物の種類)によって変わります<br>
+            <ul>
+                桃: 100 point<br>
+                りんご: 50 point<br>
+                みかん: 30 point<br>
+                レモン: 10 point<br>
+            </ul>
+            5問計算問題を回答するとクイズが出題されるようになっています<br>
+            計算問題は下部の数値ボタンから答えを入力し、"Enter"を押してください<br>
+        </ul>
+    </div>
+    <div class="game-rules-container">
+        <h2>Game Rules</h2>
+        <ul>
+            This is a game where you earn points by correctly answering calculation problems and quizzes<br>
+            Scores vary depending on the speed of answering and the level of the question (type of fruit)<br>
+            <ul>
+                Peach: 100 point<br>
+                Apple: 50 point<br>
+                Orange: 30 point<br>
+                Lemon: 10 point<br>
+            </ul>
+            For calculation questions, enter the answer using the numerical buttons at the bottom and press "Enter"<br>
+            (There is no need to select a question when answering; the answer is correct if the input content corresponds to one of the questions on the screen)<br>
+        </ul>
+    </div>
+    
+    <canvas id="leftCanvas" width="100" height="100"></canvas>
+    <canvas id="rightCanvas" width="100" height="100"></canvas>
 
+
+    
     <script src="../static/script/start.js"></script>
 </body>
 </html>
