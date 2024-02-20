@@ -36,54 +36,104 @@ class Block{
      * @param {number} radius - 半径
      * @param {number} life - ライフ（生存フラグを兼ねる）
      * @param {number} area - 解答可能エリア
+     * @param {Array<{ question: string, answer: string, fruit: fruit }>}
+     * @param {Array[string]} imgPath - 画像ファイルパス
      * @param {string} color - ブロックの色 
      */
-    constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
+    constructor(ctx, x, y, radius, life, area, calcData, imgPath, color = '#0000ff'){
         this.ctx = ctx;
         this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.radius = radius;
         this.life = life;
         this.area = area;
+        this.calcData = calcData;
+        this.imgPath = imgPath
         this.color = color;
-        this.speed = 0.5;
-        this.question = new Question();
+        this.speed = 0.4;
+        //this.question = new Question();
+        this.index = Math.floor(Math.random() * calcData.length); // 計算問題を格納する配列のインデックス
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
-        // this.selected = false;  // 選択されているかどうか
+        this.imageArray = []; // Imageインスタンスを格納する配列
     }
 
     /**
      * ブロックを描画する
      */
     draw(){      
-        // パスの設定を開始することを明示する
-        this.ctx.beginPath();
-        // 円のパスを設定する
-        this.ctx.arc(
-            this.position.x,
-            this.position.y,
-            this.radius,
-            0.0,
-            Math.PI * 2.0
-        );
-        // 円の色を設定する
-        this.ctx.fillStyle = this.color;
-        // パスを閉じることを明示する
-        this.ctx.closePath();
-        // 設定したパスで円の描画を行う
-        this.ctx.fill();
+        // // パスの設定を開始することを明示する
+        // this.ctx.beginPath();
+        // // 円のパスを設定する
+        // this.ctx.arc(
+        //     this.position.x,
+        //     this.position.y,
+        //     this.radius,
+        //     0.0,
+        //     Math.PI * 2.0
+        // );
+        // // 円の色を設定する
+        // this.ctx.fillStyle = this.color;
+        // // パスを閉じることを明示する
+        // this.ctx.closePath();
+        // // 設定したパスで円の描画を行う
+        // this.ctx.fill();
+
+        // 画像の読み込みが完了してなければ，描画しない
+        this.imageArray.map((v) => {
+            if(!v.imageLoaded) return;
+        });
+
+        // フルーツ(レベルによって)描画する画像を判断
+        let fruit = this.calcData[this.index].fruit;
+        switch(fruit){
+            case 'PEACH':
+                this.ctx.drawImage(this.imageArray[0],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'APPLE':
+                this.ctx.drawImage(this.imageArray[1],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'ORANGE':
+                this.ctx.drawImage(this.imageArray[2],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'LEMON':
+                this.ctx.drawImage(this.imageArray[3],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+        }
             
         // 問題のフォントを設定
-        this.ctx.fillStyle = this.question.color;
-        this.ctx.font = this.question.font;
+        this.ctx.fillStyle = '#000000';
+        this.ctx.font = '20px Arial';
         this.ctx.textAlign = "center";
         // テキストを表示
         this.ctx.fillText(
-            `${this.question.number1} ${this.question.operator} ${this.question.number2}`,
+            `${this.calcData[this.index].question}`,
             this.position.x,
-            this.position.y + 5  // 数字が円の中心にくるよう微調整
+            this.position.y + 10  // 数字が円の中心にくるよう微調整
         ); 
         
     }
@@ -123,13 +173,32 @@ class Block{
         // 画面に表示されていない場合はスキップ
         if(this.life === 0){return 0;}
 
-        if(userAnswer === this.question.answer){
+        if(userAnswer === Number(this.calcData[this.index].answer)){
             // 再度待機時間を設定
             this.waitTime = Math.random() * 5;  
             this.waitFrame = this.waitTime * 60; 
 
-            // 正解した位置に応じてスコア計算
-            let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
+            // 正解した位置とフルーツ(レベル)に応じてスコア計算
+            let fruit = this.calcData[this.index].fruit;
+            console.log(fruit);
+            let addScore = 0;
+            switch(fruit){
+                case 'PEACH':
+                    addScore = Math.floor(3 * (this.area - this.position.y) * 100) / 100; // 小数点第2位で切り捨て
+                    break;
+                
+                case 'APPLE':
+                    addScore = Math.floor(2 * (this.area - this.position.y) * 100) / 100;
+                    break;
+                
+                case 'ORANGE':
+                    addScore = Math.floor(1 * (this.area - this.position.y) * 100) / 100;
+                    break;
+                
+                case 'LEMON':
+                    addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
+                    break;
+            }
 
             // 初期化
             this.initialize();
@@ -183,7 +252,8 @@ class Block{
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
         this.position.set(this.initialPosition.x, this.initialPosition.y);
-        this.question = new Question();
+        //this.question = new Question();
+        this.index = Math.floor(Math.random() * this.calcData.length);
     }
 
     /**
@@ -192,6 +262,28 @@ class Block{
     resetLife(){
         if(this.waitFrame < 0){
             this.life = 1;
+        }
+    }
+
+    // 画像の読み込みが完了したときに呼ばれるコールバック関数
+    onImageLoad(){
+        this.imageLoaded = true;
+    }
+
+    // 画像の読み込みが失敗したときに呼ばれるコールバック関数
+    onImageError(){
+        console.error("Failed to load image:", this.imageUrl);
+    }
+
+    // 画像の読み込み
+    loadImage(){
+        for(let i = 0; i< 4; i++){
+            this.imageArray[i] = new Image();
+            this.imageArray[i].onload = this.onImageLoad.bind(this);
+            this.imageArray[i].onerror = this.onImageError.bind(this);
+            this.imageArray[i].src = this.imgPath[i];
+
+            // console.log(this.imageArray[i].src);
         }
     }
     
@@ -287,18 +379,26 @@ class NumberKey{
         this.color = color;
         this.fontColor = fontColor;
         this.font = font;
+        this.isPressed =  false;
     }
 
     /**
      * 数字キーの更新
      */
     update(){
+
         // パスの設定を開始することを明示する
         this.ctx.beginPath();
         // 楕円のパスを設定する
         this.ctx.ellipse(this.position.x, this.position.y, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
-        //楕円の色を設定する
-        this.ctx.fillStyle = this.color;
+        
+        if(this.isPressed){
+            this.ctx.fillStyle = '#808080';
+        } else {
+            //楕円の色を設定する
+            this.ctx.fillStyle = this.color;
+        }
+        
         // パスを閉じることを明示する
         this.ctx.closePath();
         // 設定したパスで楕円の描画を行う
@@ -308,7 +408,7 @@ class NumberKey{
         this.ctx.fillStyle = this.fontColor;
         this.ctx.font = this.font;
         this.ctx.textAlign = "center";
-        //　テキストを表示
+        // テキストを表示
         this.ctx.fillText(
             `${this.type}`,
             this.position.x,
@@ -342,7 +442,7 @@ class Quiz{
         this.life = life;
         this.area = area;
         this.color = color;
-        this.speed = 0.5;
+        this.speed = 0.2;
         this.quizData = quizData;
         this.quizIndex = 0;
         this.setChoicesPosition();
@@ -366,7 +466,7 @@ class Quiz{
         // 問題文を表示
         let x = this.position.x;
         let y = this.position.y + 5;
-        this.ctx.fillText(quiz.question, x, y);      
+        this.ctx.fillText(quiz.question, x, y, this.width - 10);      
     }
 
     /**

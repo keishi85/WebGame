@@ -84,7 +84,7 @@
     let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
-     * @type {Array<{ question: string, answer: string }>}
+     * @type {Array<{ question: string, answer: string, fruit: fruit }>}
      */
     let calcData = [];
     /**
@@ -117,6 +117,11 @@
      * @type {string}
      */
     let questionType = 'Calculation';
+    /**
+     * 画像ファイルパスを格納する配列
+     * @type {Array[string]}
+     */
+    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -156,7 +161,8 @@
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
+            blockArray[i].loadImage();
         }
 
         // 数字キーの初期化
@@ -304,6 +310,14 @@
             let dx = (x - numberKeyArray[i].position.x) / numberKeyArray[i].radiusX;
             let dy = (y - numberKeyArray[i].position.y) / numberKeyArray[i].radiusY;
             if(dx * dx + dy * dy <= 1){
+                
+                // 押された時にキーの色を変える
+                numberKeyArray[i].isPressed = true;
+                // 一定時間後に isPressed を false に設定する
+                setTimeout(() => {
+                    numberKeyArray[i].isPressed = false;
+                }, 100); // 100ミリ秒後に isPressed を false に設定する
+
                 // 数字キーの種類によって判断する
                 let type = numberKeyArray[i].type
                 switch (type) {
@@ -430,7 +444,8 @@
                 // 問題オブジェクトを作成してcalcData配列に追加する
                 let questionObject = {
                     question: item.problem, // 'problem'フィールドを使用
-                    answer: item.answer
+                    answer: item.answer,
+                    fruit: item.fruit
                 };
                 calcData.push(questionObject);
             }  
