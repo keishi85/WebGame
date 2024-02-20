@@ -63,32 +63,77 @@ class Block{
      * ブロックを描画する
      */
     draw(){      
-        // パスの設定を開始することを明示する
-        this.ctx.beginPath();
-        // 円のパスを設定する
-        this.ctx.arc(
-            this.position.x,
-            this.position.y,
-            this.radius,
-            0.0,
-            Math.PI * 2.0
-        );
-        // 円の色を設定する
-        this.ctx.fillStyle = this.color;
-        // パスを閉じることを明示する
-        this.ctx.closePath();
-        // 設定したパスで円の描画を行う
-        this.ctx.fill();
+        // // パスの設定を開始することを明示する
+        // this.ctx.beginPath();
+        // // 円のパスを設定する
+        // this.ctx.arc(
+        //     this.position.x,
+        //     this.position.y,
+        //     this.radius,
+        //     0.0,
+        //     Math.PI * 2.0
+        // );
+        // // 円の色を設定する
+        // this.ctx.fillStyle = this.color;
+        // // パスを閉じることを明示する
+        // this.ctx.closePath();
+        // // 設定したパスで円の描画を行う
+        // this.ctx.fill();
+
+        // 画像の読み込みが完了してなければ，描画しない
+        this.imageArray.map((v) => {
+            if(!v.imageLoaded) return;
+        });
+
+        // フルーツ(レベルによって)描画する画像を判断
+        let fruit = this.calcData[this.index].fruit;
+        switch(fruit){
+            case 'PEACH':
+                this.ctx.drawImage(this.imageArray[0],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'APPLE':
+                this.ctx.drawImage(this.imageArray[1],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'ORANGE':
+                this.ctx.drawImage(this.imageArray[2],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+            
+            case 'LEMON':
+                this.ctx.drawImage(this.imageArray[3],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                break;
+        }
             
         // 問題のフォントを設定
-        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillStyle = '#000000';
         this.ctx.font = '20px Arial';
         this.ctx.textAlign = "center";
         // テキストを表示
         this.ctx.fillText(
             `${this.calcData[this.index].question}`,
             this.position.x,
-            this.position.y + 5  // 数字が円の中心にくるよう微調整
+            this.position.y + 10  // 数字が円の中心にくるよう微調整
         ); 
         
     }

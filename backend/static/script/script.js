@@ -121,7 +121,7 @@
      * 画像ファイルパスを格納する配列
      * @type {Array[string]}
      */
-    const imgPath = ['../images/peach.png', '../images/apple.png', '../images/orange.png', '../images/lemon.png'];
+    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -156,12 +156,12 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
-        console.log(calcData);
-        console.log(quizData);
+        // console.log(calcData);
+        // console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
             blockArray[i].loadImage();
         }
 
