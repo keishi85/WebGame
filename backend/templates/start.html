@@ -2,18 +2,21 @@
 <html>
 <head>
     <title>スイカゲーム - スタート画面</title>
-    <link rel="stylesheet" href="../static/css/start.css"> <!-- スタイルシートのパスを適切に設定してください -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/start.css">
 </head>
 <body>
     <div class="game-start-container">
-        <h1>スイカゲーム</h1>
-        <img src="../static/images/orange.png" alt="スイカキャラクター"> <!-- キャラクター画像のパスを適切に設定してください -->
+        <h1 class="mochiy-pop-one-regular">スイカゲーム</h1>
         <form id="nameForm">
             <label for="name">名前:</label>
             <input type="text" id="name" name="name" placeholder="あなたの名前">
-            <button type="button" id="startGame">ゲームスタート</button>
+            <button type="button" id="startGame" class="mochiy-pop-one-regular">ゲームスタート</button>
         </form>
     </div>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
 
     <script src="../static/script/start.js"></script>
 </body>
