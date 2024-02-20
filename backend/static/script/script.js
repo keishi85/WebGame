@@ -304,6 +304,14 @@
             let dx = (x - numberKeyArray[i].position.x) / numberKeyArray[i].radiusX;
             let dy = (y - numberKeyArray[i].position.y) / numberKeyArray[i].radiusY;
             if(dx * dx + dy * dy <= 1){
+                
+                // 押された時にキーの色を変える
+                numberKeyArray[i].isPressed = true;
+                // 一定時間後に isPressed を false に設定する
+                setTimeout(() => {
+                    numberKeyArray[i].isPressed = false;
+                }, 100); // 100ミリ秒後に isPressed を false に設定する
+
                 // 数字キーの種類によって判断する
                 let type = numberKeyArray[i].type
                 switch (type) {

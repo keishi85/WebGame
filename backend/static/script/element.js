@@ -287,18 +287,26 @@ class NumberKey{
         this.color = color;
         this.fontColor = fontColor;
         this.font = font;
+        this.isPressed =  false;
     }
 
     /**
      * 数字キーの更新
      */
     update(){
+
         // パスの設定を開始することを明示する
         this.ctx.beginPath();
         // 楕円のパスを設定する
         this.ctx.ellipse(this.position.x, this.position.y, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
-        //楕円の色を設定する
-        this.ctx.fillStyle = this.color;
+        
+        if(this.isPressed){
+            this.ctx.fillStyle = '#808080';
+        } else {
+            //楕円の色を設定する
+            this.ctx.fillStyle = this.color;
+        }
+        
         // パスを閉じることを明示する
         this.ctx.closePath();
         // 設定したパスで楕円の描画を行う
@@ -308,7 +316,7 @@ class NumberKey{
         this.ctx.fillStyle = this.fontColor;
         this.ctx.font = this.font;
         this.ctx.textAlign = "center";
-        //　テキストを表示
+        // テキストを表示
         this.ctx.fillText(
             `${this.type}`,
             this.position.x,
