@@ -184,19 +184,19 @@ class Block{
             let addScore = 0;
             switch(fruit){
                 case 'PEACH':
-                    addScore = 3 * (this.area - this.position.y);
+                    addScore = Math.floor(3 * (this.area - this.position.y) * 100) / 100; // 小数点第2位で切り捨て
                     break;
                 
                 case 'APPLE':
-                    addScore = 2 * (this.area - this.position.y);
+                    addScore = Math.floor(2 * (this.area - this.position.y) * 100) / 100;
                     break;
                 
                 case 'ORANGE':
-                    addScore = 1 * (this.area - this.position.y);
+                    addScore = Math.floor(1 * (this.area - this.position.y) * 100) / 100;
                     break;
                 
                 case 'LEMON':
-                    addScore = 0.5 * (this.area - this.position.y);
+                    addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
                     break;
             }
 

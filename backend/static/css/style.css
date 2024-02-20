@@ -6,7 +6,7 @@
 }
  
 html, body {
-    background-color: #555555;
+    background-color: #efa051;
     color: #f0f0f0;
     text-align: center;
     width: 100%;
@@ -15,6 +15,6 @@ html, body {
 }
  
 canvas {
-    margin: 0px auto;
+    margin: 80px auto;
     border: 1px solid silver;
 }
