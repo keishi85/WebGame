@@ -117,6 +117,11 @@
      * @type {string}
      */
     let questionType = 'Calculation';
+    /**
+     * 画像ファイルパスを格納する配列
+     * @type {Array[string]}
+     */
+    const imgPath = ['../images/peach.png', '../images/apple.png', '../images/orange.png', '../images/lemon.png'];
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -151,8 +156,8 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
-        // console.log(calcData);
-        // console.log(quizData);
+        console.log(calcData);
+        console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
