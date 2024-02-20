@@ -36,22 +36,23 @@ class Block{
      * @param {number} radius - 半径
      * @param {number} life - ライフ（生存フラグを兼ねる）
      * @param {number} area - 解答可能エリア
+     * @param {Array[string]} imgPath - 画像ファイルパス
      * @param {string} color - ブロックの色 
      */
-    constructor(ctx, x, y, radius, life, area, color = '#0000ff'){
+    constructor(ctx, x, y, radius, life, area, imgPath, color = '#0000ff'){
         this.ctx = ctx;
         this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.radius = radius;
         this.life = life;
         this.area = area;
+        this.imgPath = imgPath
         this.color = color;
         this.speed = 0.5;
         this.question = new Question();
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
-        // this.selected = false;  // 選択されているかどうか
     }
 
     /**
@@ -193,6 +194,24 @@ class Block{
         if(this.waitFrame < 0){
             this.life = 1;
         }
+    }
+
+    // 画像の読み込みが完了したときに呼ばれるコールバック関数
+    onImageLoad(){
+        this.imageLoaded = true;
+    }
+
+    // 画像の読み込みが失敗したときに呼ばれるコールバック関数
+    onImageError(){
+        console.error("Failed to load image:", this.imageUrl);
+    }
+
+    // 画像の読み込み
+    loadImage(){
+        this.image = new Image();
+        this.image.onload = this.onImageLoad.bind(this);
+        this.image.onerror = this.onImageError.bind(this);
+        this.image.src = this.imageUrl;
     }
     
 }
