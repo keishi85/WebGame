@@ -84,7 +84,7 @@
     let playerName = localStorage.getItem('playerName')
     /**
      * DBから取得した問題を管理する変数
-     * @type {Array<{ question: string, answer: string }>}
+     * @type {Array<{ question: string, answer: string, fruit: fruit }>}
      */
     let calcData = [];
     /**
@@ -151,8 +151,8 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
-        // console.log(calcData);
-        // console.log(quizData);
+        console.log(calcData);
+        console.log(quizData);
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
@@ -430,7 +430,8 @@
                 // 問題オブジェクトを作成してcalcData配列に追加する
                 let questionObject = {
                     question: item.problem, // 'problem'フィールドを使用
-                    answer: item.answer
+                    answer: item.answer,
+                    fruit: item.fruit
                 };
                 calcData.push(questionObject);
             }  
