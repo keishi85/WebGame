@@ -161,7 +161,7 @@
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
-            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT, imgPath);
+            blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 50, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
             blockArray[i].loadImage();
         }
 

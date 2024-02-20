@@ -36,23 +36,27 @@ class Block{
      * @param {number} radius - 半径
      * @param {number} life - ライフ（生存フラグを兼ねる）
      * @param {number} area - 解答可能エリア
+     * @param {Array<{ question: string, answer: string, fruit: fruit }>}
      * @param {Array[string]} imgPath - 画像ファイルパス
      * @param {string} color - ブロックの色 
      */
-    constructor(ctx, x, y, radius, life, area, imgPath, color = '#0000ff'){
+    constructor(ctx, x, y, radius, life, area, calcData, imgPath, color = '#0000ff'){
         this.ctx = ctx;
         this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
         this.radius = radius;
         this.life = life;
         this.area = area;
+        this.calcData = calcData;
         this.imgPath = imgPath
         this.color = color;
-        this.speed = 0.5;
-        this.question = new Question();
+        this.speed = 0.4;
+        //this.question = new Question();
+        this.index = Math.floor(Math.random() * calcData.length); // 計算問題を格納する配列のインデックス
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
+        this.imageArray = []; // Imageインスタンスを格納する配列
     }
 
     /**
@@ -77,12 +81,12 @@ class Block{
         this.ctx.fill();
             
         // 問題のフォントを設定
-        this.ctx.fillStyle = this.question.color;
-        this.ctx.font = this.question.font;
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '20px Arial';
         this.ctx.textAlign = "center";
         // テキストを表示
         this.ctx.fillText(
-            `${this.question.number1} ${this.question.operator} ${this.question.number2}`,
+            `${this.calcData[this.index].question}`,
             this.position.x,
             this.position.y + 5  // 数字が円の中心にくるよう微調整
         ); 
@@ -124,13 +128,32 @@ class Block{
         // 画面に表示されていない場合はスキップ
         if(this.life === 0){return 0;}
 
-        if(userAnswer === this.question.answer){
+        if(userAnswer === Number(this.calcData[this.index].answer)){
             // 再度待機時間を設定
             this.waitTime = Math.random() * 5;  
             this.waitFrame = this.waitTime * 60; 
 
-            // 正解した位置に応じてスコア計算
-            let addScore = this.question.scoreCoefficient * (this.area - this.position.y);
+            // 正解した位置とフルーツ(レベル)に応じてスコア計算
+            let fruit = this.calcData[this.index].fruit;
+            console.log(fruit);
+            let addScore = 0;
+            switch(fruit){
+                case 'PEACH':
+                    addScore = 3 * (this.area - this.position.y);
+                    break;
+                
+                case 'APPLE':
+                    addScore = 2 * (this.area - this.position.y);
+                    break;
+                
+                case 'ORANGE':
+                    addScore = 1 * (this.area - this.position.y);
+                    break;
+                
+                case 'LEMON':
+                    addScore = 0.5 * (this.area - this.position.y);
+                    break;
+            }
 
             // 初期化
             this.initialize();
@@ -184,7 +207,8 @@ class Block{
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
         this.position.set(this.initialPosition.x, this.initialPosition.y);
-        this.question = new Question();
+        //this.question = new Question();
+        this.index = Math.floor(Math.random() * this.calcData.length);
     }
 
     /**
@@ -208,10 +232,14 @@ class Block{
 
     // 画像の読み込み
     loadImage(){
-        this.image = new Image();
-        this.image.onload = this.onImageLoad.bind(this);
-        this.image.onerror = this.onImageError.bind(this);
-        this.image.src = this.imageUrl;
+        for(let i = 0; i< 4; i++){
+            this.imageArray[i] = new Image();
+            this.imageArray[i].onload = this.onImageLoad.bind(this);
+            this.imageArray[i].onerror = this.onImageError.bind(this);
+            this.imageArray[i].src = this.imgPath[i];
+
+            // console.log(this.imageArray[i].src);
+        }
     }
     
 }
@@ -369,7 +397,7 @@ class Quiz{
         this.life = life;
         this.area = area;
         this.color = color;
-        this.speed = 0.5;
+        this.speed = 0.2;
         this.quizData = quizData;
         this.quizIndex = 0;
         this.setChoicesPosition();
@@ -393,7 +421,7 @@ class Quiz{
         // 問題文を表示
         let x = this.position.x;
         let y = this.position.y + 5;
-        this.ctx.fillText(quiz.question, x, y);      
+        this.ctx.fillText(quiz.question, x, y, this.width - 10);      
     }
 
     /**
