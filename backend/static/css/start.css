@@ -1,0 +1,70 @@
+@charset "utf-8";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* viewport heightを使用して、bodyの高さをビューポートの高さに合わせます。 */
+    margin: 0;
+    padding: 0;
+    background-color: #efa051;
+    color: #FF4500;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+
+.game-start-container {
+    background-color: #FFDAB9;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* display: inline-block; この行は削除またはコメントアウト */
+    text-align: center; /* 子要素を中央揃えにする */
+}
+
+
+h1 {
+    margin-bottom: 20px;
+}
+
+input[type="text"], button {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #FF4500;
+}
+
+button {
+    background-color: #FF8C00; /* 濃いオレンジ色 */
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #FFA07A; /* 明るいオレンジ色 */
+}
+
+
+/* フォントの指定 */
+.mochiy-pop-one-regular {
+    font-family: "Mochiy Pop One", sans-serif;
+    font-weight: 450;
+    font-style: normal;
+}
+
+/* 画像の指定 */
+/* start.cssの追加スタイル */
+.start-image {
+    display: block; /* ブロックレベル要素として扱う */
+    max-width: 30%; /* コンテナの幅に合わせて最大幅を設定 */
+    margin: 0 auto 20px; /* 上下のマージンなし、左右のマージンを自動で中央揃え */
+}
+
+
+  
+  
