@@ -22,6 +22,7 @@ html, body {
 canvas {
     position: absolute;
     top: 0;
+    /* z-index: -1; canvasを背面に */
 }
 
 #leftCanvas {
@@ -42,6 +43,7 @@ canvas {
     /* display: inline-block; この行は削除またはコメントアウト */
     text-align: center; /* 子要素を中央揃えにする */
     margin-bottom: 15px; /* 下部に隙間を追加 */
+    z-index: 2; /* テキストボックスとボタンを前面に */
 }
 
 .game-rules-container {
@@ -53,6 +55,7 @@ canvas {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
     margin-bottom: 10px; /* 下部に隙間を追加 */
+    z-index: 2; /* テキストボックスとボタンを前面に */
 
     /* テキストのスタイル設定 */
     color: #333; /* テキストの色 */
