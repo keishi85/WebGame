@@ -40,14 +40,14 @@ def main():
     for line in f:
       question, choice1, choice2, choice3, choice4, answer = line.strip().split(",")
       add_question(questions_collection, question, choice1, choice2, choice3, choice4, answer)
-      print(f"Added: {question} -> {choice1} -> {choice2} -> {choice3} -> {choice4} -> {answer}")
+      # print(f"Added: {question} -> {choice1} -> {choice2} -> {choice3} -> {choice4} -> {answer}")
 
   # テキストファイルから計算問題を読み込む + DBに追加
   with open(CALCULATION_PROBLEM_FILE_PATH, "r") as f_calc:
     for line in f_calc:
-      problem, answer = line.strip().split(",")
-      add_calculation_problem(questions_collection, problem, answer)
-      print(f"Added calculation problem: {problem} -> {answer}")
+      problem, answer, fruit = line.strip().split(",")
+      add_calculation_problem(questions_collection, problem, answer, fruit)
+      # print(f"Added calculation problem: {problem} -> {answer}")
 
 
 # クイズの問題を追加する関数
@@ -63,11 +63,11 @@ def add_question(questions_collection, question, choice1, choice2, choice3, choi
 
 
 # 計算問題を追加する関数
-def add_calculation_problem(collection, problem, answer):
+def add_calculation_problem(collection, problem, answer, fruit):
     # データベース内で同じ問題を検索
     if collection.find_one({'problem': problem}) is None:
         # 同じ問題が存在しない場合は、新たに追加
-        collection.insert_one({'type': 'calculation', 'problem': problem, 'answer': answer})
+        collection.insert_one({'type': 'calculation', 'problem': problem, 'answer': answer, 'fruit': fruit})
 
 
 
