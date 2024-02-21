@@ -76,7 +76,7 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = 0;   
+    let score = localStorage.getItem('score');   
     /**
      * プレイヤーの名前を格納する変数
      * @type {string}
@@ -122,6 +122,11 @@
      * @type {Array[string]}
      */
     const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
+    /**
+     * ユーザー数をカウント
+     * @type {number}
+     */
+    let userCount = 0;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -214,9 +219,16 @@
              // 入力された数字の更新
             drawInputNumber();
         }      
+
+        // 復帰できるようにローカルに保存
+        updateGameState(playerName, score);
        
         // スコアの更新
         //drawScore();
+
+        // プレイヤーの人数を取得
+        getUserCount();
+
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
@@ -497,6 +509,21 @@
                 console.error('Error:', error);
             });
     }
+    
+    // ユーザーの人数を取得する関数
+    function getUserCount() {
+        // ユーザーの人数を取得するためのエンドポイントにリクエストを送信
+        fetch('/get_user_count')
+            .then(response => response.json())
+            .then(data => {
+                // ユーザーの人数を表示
+                userCount = data.user_count;
+            })
+            .catch(error => {
+                console.error('Error fetching user count:', error);
+            });
+    }
+    
     function drawPlayerNameAndScore(){
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
@@ -527,6 +554,11 @@
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
         }); 
+    }
+    // ゲーム状態の更新時にローカルストレージを更新する関数
+    function updateGameState(name, score) {
+        const state = { name: name, score: score };
+        localStorage.setItem('gameState', JSON.stringify(state));
     }
 
 })();

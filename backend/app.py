@@ -66,6 +66,16 @@ def get_scores():
 
     return jsonify(result_list)
 
+# 参加人数を送信するエンドポイント
+@app.route('/get_user_count', methods=['GET'])
+def get_user_count():
+    # ユーザーの人数をカウント
+    user_count = mongo.db.scores.count_documents({})
+    
+    # 人数をJSON形式で返す
+    return jsonify({'user_count': user_count})
+
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)

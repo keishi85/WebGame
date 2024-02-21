@@ -57,6 +57,11 @@ class Block{
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
         this.imageArray = []; // Imageインスタンスを格納する配列
+        // テキストのスタイル設定
+        this.ctx.font = '20px Arial'; // フォントサイズとフォント種類
+        this.ctx.fillStyle = '#ffffff'; // テキストの塗りつぶし色（白）
+        this.ctx.strokeStyle = '#000000'; // テキストの枠線の色（黒）
+        this.ctx.lineWidth = 3; // 枠線の太さ
     }
 
     /**
