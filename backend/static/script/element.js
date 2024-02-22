@@ -372,7 +372,7 @@ class NumberKey{
 
         // 枠線の色を設定する
         this.ctx.strokeStyle = '#ffffff';
-
+        // 枠線の太さ
         this.ctx.lineWidth = 2;
         
         // パスを閉じることを明示する
@@ -383,7 +383,7 @@ class NumberKey{
 
         // 数字のフォントを設定
         this.ctx.fillStyle = this.fontColor;
-        this.ctx.font = this.font;
+        this.ctx.font = "bold 15px 'Segoe Print', san-serif";
         this.ctx.textAlign = "center";
         // テキストを表示
         this.ctx.fillText(
@@ -442,7 +442,7 @@ class Quiz{
          
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
-        this.ctx.font = '15px Arial';
+        this.ctx.font = "bold 15px 'Segoe Print', san-serif";
         this.ctx.textAlign = "center";
 
         let quiz = this.quizData[this.quizIndex];
@@ -452,7 +452,7 @@ class Quiz{
         // let y = this.position.y + 5;
         // this.ctx.fillText(quiz.question, x, y, this.width - 10);
 
-        let lines = this.breakLine(quiz.question, this.width * 3 / 4);
+        let lines = this.breakLine(quiz.question, this.width * 2 / 3);
         for(let i = 0; i < lines.length; i++){
             this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 5 + i * 15);
         }
@@ -508,14 +508,19 @@ class Quiz{
     drawChoices(){
 
         for(let i = 0; i < 4; ++i){
+            // 矩形の色を設定
+            this.ctx.fillStyle = '#32cd32';
+            // 枠線の色を設定する
+            this.ctx.strokeStyle = '#ffffff';
+            // 枠線の太さ
+            this.ctx.lineWidth = 2;
             // 矩形を描画
-            this.ctx.fillStyle = '#ffffff';
-            
             this.ctx.fillRect(this.choicesPosition[i].x, this.choicesPosition[i].y, this.choicesWidth, this.choicesHeight);
+            this.ctx.strokeRect(this.choicesPosition[i].x, this.choicesPosition[i].y, this.choicesWidth, this.choicesHeight);
             
             // 選択肢を描画
             this.ctx.fillStyle = '#000000'
-            this.ctx.font = '15px Arial';
+            this.ctx.font = "bold 15px 'Segoe Print', san-serif";
             this.ctx.textAlign = "center";
             let x = this.choicesPosition[i].x + this.choicesWidth / 2;
             let y = this.choicesPosition[i].y + this.choicesHeight / 2;
@@ -555,7 +560,12 @@ class Quiz{
         }
     }
 
-    // 文字列を分割し，自動的に改行する
+    /**
+     * 文字列を分割し，自動的に改行する
+     * @param {string} text 
+     * @param {number} maxWidth 
+     * @returns 
+     */
     breakLine(text, maxWidth){
         let words = text.split('');
         let lines = [];
@@ -591,6 +601,39 @@ class Quiz{
         this.img.onload = this.onImageLoad.bind(this);
         this.img.onerror = this.onImageError.bind(this);
         this.img.src = this.imgPath;
+    }
+
+    drawCircle() {
+        // 円を描画
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+        ctx.closePath();
+    
+        // // 1秒後に描画を消す
+        // setTimeout(() => {
+        //     clearCanvas();
+        // }, 1000);
+    }
+
+    drawCross() {
+        // バツを描画
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 - 50, canvas.height / 2 - 50);
+        ctx.lineTo(canvas.width / 2 + 50, canvas.height / 2 + 50);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.moveTo(canvas.width / 2 + 50, canvas.height / 2 - 50);
+        ctx.lineTo(canvas.width / 2 - 50, canvas.height / 2 + 50);
+        ctx.stroke();
+        ctx.closePath();
+    
+        // // 1秒後に描画を消す
+        // setTimeout(() => {
+        //     clearCanvas();
+        // }, 1000);
     }
 
 }
