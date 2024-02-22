@@ -5,6 +5,9 @@
         "/static/images/orange.png",
         "/static/images/peach.png"
     ];
+
+    // ユーザー数をカウントする変数
+    let userCount = 0;
     
     // 落下する画像オブジェクトの配列
     const fallingImages = [];
@@ -54,9 +57,19 @@
                 localStorage.setItem('playerName', name);
 
                 updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
-    
-                // ゲームのページに遷移し、URLに名前をクエリパラメータとして追加
-                window.location.href = `/game?name=${encodeURIComponent(name)}`;
+
+                // 通信中の表示を有効にする
+                displayLoadingIndicator(true);
+
+                try {
+                    // await submitUserCount(); // 参加人数をサーバーに送信
+                    // await waitForGameStart(); // サーバーからのゲーム開始の合図を待つ
+                    window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                } catch (error) {
+                    console.error('An error occurred:', error);
+                    displayLoadingIndicator(false);
+                    alert('Failed to start the game. Please try again later.');
+                }
             }
         });
     });
@@ -137,6 +150,25 @@ function draw(ctx, canvas){
 function updateGameState(name, score) {
     const state = { name: name, score: score };
     localStorage.setItem('gameState', JSON.stringify(state));
+}
+
+// ユーザー数をサーバーに送信する関数
+async function submitUserCount() {
+    const userCount = document.getElementById('userCount').value;
+    fetch('/set_user_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userCount: userCount}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('User count:', data.userCount);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 })();

@@ -1,9 +1,14 @@
 from flask import Flask, render_template, jsonify, request
-from pymongo import MongoClient
 from flask_pymongo import PyMongo
+from flask_socketio import SocketIO, emit
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
+
+user_count = 0
+required_user_count = 0
 
 # MongoDBへの接続設定
 app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
@@ -47,7 +52,7 @@ def get_scores():
     # スコアが高い順にソートして全プレイヤーを取得
     all_scores = mongo.db.scores.find({}, {'_id': 0}).sort('score', -1)
     all_scores_list = list(all_scores)
-
+    
     # 上位3人のプレイヤーと指定されたプレイヤーの情報を含むリストを作成
     result_list = []
     player_included = False
@@ -75,6 +80,27 @@ def get_user_count():
     # 人数をJSON形式で返す
     return jsonify({'user_count': user_count})
 
+# 参加人数を受け取るエンドポイント
+@app.route('/set_user_count', methods=['POST'])
+def set_user_count():
+    global user_count
+    global required_user_count
+
+    data = request.get_json()
+    user_count += 1
+    required_user_count = data.get('userCount')
+
+    print(user_count)
+
+    # 全ユーザーが揃ったかどうかをチェック
+    check_start_condition()
+    return jsonify({'message': 'User count updated'})
+
+def check_start_condition():
+    global user_count
+    if user_count >= required_user_count:
+        socketio.emit('game_start', {'message': 'Game Start'})
+        user_count = 0  # カウンターをリセット
 
 
 if __name__ == '__main__':

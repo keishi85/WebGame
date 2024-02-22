@@ -10,9 +10,16 @@
 <body>
     <div class="game-start-container">
         <h1 class="mochiy-pop-one-regular">スイカゲーム</h1>
+        <!-- 通信中の表示用の要素 -->
+        <div id="loading" style="display: none;">通信中...</div>
+
         <form id="nameForm">
             <label for="name">名前:</label>
             <input type="text" id="name" name="name" placeholder="あなたの名前">
+            <form id="userCountForm">
+                <label for="userCount">ユーザー数:</label>
+                <input type="number" id="userCount" name="userCount" required>
+            </form>        
             <button type="button" id="startGame" class="mochiy-pop-one-regular">ゲームスタート</button>
         </form>
     </div>
