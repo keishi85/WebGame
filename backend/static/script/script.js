@@ -111,7 +111,7 @@
      * この数の計算問題を解いた後にクイズが出る
      * @type {number}
      */
-    const CHANGE_CALCULATION_QUESTION = 5;
+    const CHANGE_CALCULATION_QUESTION = 3;
     /**
      * 出る問題の種類を表す変数(Calculation or Quiz)
      * @type {string}
@@ -368,12 +368,12 @@
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
-                                // 正解かどうかの判定を行う「
+                                // 正解かどうかの判定を行う
                                 let judgement = blockArray[i].checkAnswer(userAnswer);
                                 if(judgement !== 0){
                                     // スコアを加算
                                     score += judgement;
-                                    // 回答した数をインクリメンt
+                                    // 回答した数をインクリメント
                                     calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
@@ -506,7 +506,7 @@
      * @param {num} score 
      */
     function sendScore(playerName, score) {
-        console.log(playerName, score);
+        // console.log(playerName, score);
         return fetch('/submit_score', {
             method: 'POST',
             headers: {
@@ -518,11 +518,11 @@
         .then(response => response.json())
         // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
-            console.log('Success:', data);
+            //console.log('Success:', data);
             return data; // ここでPromiseを解決
         })
         .catch((error) => {
-            console.error('Error:', error);
+            //console.error('Error:', error);
         });
     }
     /**

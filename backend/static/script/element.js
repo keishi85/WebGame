@@ -435,15 +435,20 @@ class Quiz{
          
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
-        this.ctx.font = '20px Arial';
+        this.ctx.font = '15px Arial';
         this.ctx.textAlign = "center";
 
         let quiz = this.quizData[this.quizIndex];
         
         // 問題文を表示
-        let x = this.position.x;
-        let y = this.position.y + 5;
-        this.ctx.fillText(quiz.question, x, y, this.width - 10);      
+        // let x = this.position.x;
+        // let y = this.position.y + 5;
+        // this.ctx.fillText(quiz.question, x, y, this.width - 10);
+
+        let lines = this.breakLine(quiz.question, this.width);
+        for(let i = 0; i < lines.length; i++){
+            this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 4 + i * 15);
+        }
     }
 
     /**
@@ -541,6 +546,25 @@ class Quiz{
             console.log('not OK');
             return 0;
         }
+    }
+
+    breakLine(text, maxWidth){
+        let words = text.split('');
+        let lines = [];
+        let currentLine = words[0];
+
+        for(let i = 1; i < words.length; i++){
+            let word = words[i];
+            let width = this.ctx.measureText(currentLine + ' ' + word).width;
+            if(width < maxWidth){
+                currentLine += ' ' + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        lines.push(currentLine);
+        return lines;
     }
 
 }
