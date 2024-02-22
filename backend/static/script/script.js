@@ -444,7 +444,7 @@
         // 値がnull(何も入力されていない)時はスキップ
         if(inputNumber === null){return;}
         // テキストの描画
-        ctx.fillStyle = '#32cd32';
+        ctx.fillStyle = '#ff0000';
         ctx.strokeStyle = '#000000'
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
@@ -554,8 +554,6 @@
         ctx.fillStyle = "#ff0000";
         ctx.fillText('参加人数：' + userCount, 10, 25);
         
-
-
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
             const x = 10; // 名前の開始位置
