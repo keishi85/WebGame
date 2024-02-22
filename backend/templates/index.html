@@ -11,7 +11,9 @@
         <script src="../static/script/script.js"></script>
     </head>
     <body>
-        <h1>    </h1>
+        <div class="title-container">
+            <h1 class="mochiy-pop-one-regular">計算ゲーム</h1>
+        </div>
         <!-- ID 属性を持つ canvas エレメント -->
         <canvas id="main_canvas"></canvas>
         <div id="questions-container" data-questions='{{ questions | tojson | safe }}'></div>

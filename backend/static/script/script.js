@@ -550,8 +550,10 @@
         // 参加人数を表示
         ctx.textAlign = "left";
         ctx.font = "bold 17px 'Segoe Print', san-serif";
-        ctx.fillStyle = "#000000"
+        ctx.fillStyle = "#ff0000";
         ctx.fillText('参加人数：' + userCount, 10, 25);
+        
+
 
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
