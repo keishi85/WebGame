@@ -5,6 +5,9 @@
         "/static/images/orange.png",
         "/static/images/peach.png"
     ];
+
+    // ユーザー数をカウントする変数
+    let userCount = 0;
     
     // 落下する画像オブジェクトの配列
     const fallingImages = [];
@@ -32,6 +35,16 @@
         updateAndDrawImages(); // 画像を更新して描画
 
         window.addEventListener('resize', adjustCanvasSize); // ウィンドウサイズが変更されたときにも調整
+
+        // ゲームの状態をローカルストレージから読み込む
+        const gameState = localStorage.getItem('gameState');
+        // if (gameState) {
+        //     const state = JSON.parse(gameState);
+        //     // 名前入力欄に前回の名前を表示
+        //     nameInput.value = state.name;
+        //     // ゲームのページに遷移
+        //     window.location.href = '/game';
+        // }
     
         startGameButton.addEventListener('click', () => {
             const name = nameInput.value.trim(); // 名前入力の前後の空白を削除
@@ -42,9 +55,21 @@
             } else {
                 // 名前をローカルストレージに保存
                 localStorage.setItem('playerName', name);
-    
-                // ゲームのページに遷移
-                window.location.href = '/game';
+
+                updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
+
+                // 通信中の表示を有効にする
+                displayLoadingIndicator(true);
+
+                try {
+                    // await submitUserCount(); // 参加人数をサーバーに送信
+                    // await waitForGameStart(); // サーバーからのゲーム開始の合図を待つ
+                    window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                } catch (error) {
+                    console.error('An error occurred:', error);
+                    displayLoadingIndicator(false);
+                    alert('Failed to start the game. Please try again later.');
+                }
             }
         });
     });
@@ -120,4 +145,30 @@ function draw(ctx, canvas){
         ctx.drawImage(obj.image, obj.x, obj.y, targetWidth, targetHeight); // 画像を描画
     });
 }
+
+// ゲーム状態の更新時にローカルストレージを更新する関数
+function updateGameState(name, score) {
+    const state = { name: name, score: score };
+    localStorage.setItem('gameState', JSON.stringify(state));
+}
+
+// ユーザー数をサーバーに送信する関数
+async function submitUserCount() {
+    const userCount = document.getElementById('userCount').value;
+    fetch('/set_user_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userCount: userCount}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('User count:', data.userCount);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
 })();
