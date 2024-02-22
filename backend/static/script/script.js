@@ -384,11 +384,12 @@
                         // console.log(type, inputNumber);
                         break;
                     case '-':
-                        inputNumber = type + inputNumber;
-                        // 解答が未入力の時，先頭にマイナスをつける
-                        // if (inputNumber === null) {
-                        //     inputNumber = type;
-                        // }
+                        //解答が未入力の時，先頭にマイナスをつける
+                        if (inputNumber === null) {
+                            inputNumber = type;
+                        } else {
+                            inputNumber = type + inputNumber;
+                        }
                         // console.log(type, inputNumber);
                         break;
                     case '.':
