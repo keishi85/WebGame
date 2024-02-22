@@ -237,14 +237,19 @@
             drawInputNumber();
         }      
 
+        // スコアの更新
+        sendScore(playerName, score).then(() => {
+            getScores(playerName);
+        });
+
         // 復帰できるようにローカルに保存
         updateGameState(playerName, score);
        
-        // スコアの更新
-        //drawScore();
-
         // プレイヤーの人数を取得
         getUserCount();
+
+        // ユーザーの人数を描画
+        drawUserNumber();
 
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
@@ -295,6 +300,11 @@
             numberKeyCoordinateArray[13][2],
             numberKeyCoordinateArray[13][3]
         );
+        
+        // 1回送る
+        sendScore(playerName, 0).then(() => {
+            getScores(playerName);
+        });
     }
 
     /**
@@ -367,9 +377,9 @@
                                     calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
-                                    sendScore(playerName, score).then(() => {
-                                        getScores(playerName);
-                                    });
+                                    // sendScore(playerName, score).then(() => {
+                                    //     getScores(playerName);
+                                    // });
                                     break;
                                 }
                             }
@@ -495,6 +505,7 @@
      * @param {num} score 
      */
     function sendScore(playerName, score) {
+        console.log(playerName, score);
         return fetch('/submit_score', {
             method: 'POST',
             headers: {
@@ -524,7 +535,7 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log(data);  // データをコンソールに表示
+                // console.log(data);  // データをコンソールに表示
                 scoresData = data;
             })
             .catch(error => {
@@ -547,14 +558,6 @@
     }
     
     function drawPlayerNameAndScore(){
-        // 参加人数を表示
-        ctx.textAlign = "left";
-        ctx.font = "bold 17px 'Segoe Print', san-serif";
-        ctx.fillStyle = "#ff0000";
-        ctx.fillText('参加人数：' + userCount, 10, 25);
-        
-
-
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
             const x = 10; // 名前の開始位置
@@ -585,6 +588,14 @@
             ctx.fillText(separator + scoreText, scoreX, y);
         }); 
         
+    }
+
+    function drawUserNumber(){
+        // 参加人数を表示
+        ctx.textAlign = "left";
+        ctx.font = "bold 17px 'Segoe Print', san-serif";
+        ctx.fillStyle = "#ff0000";
+        ctx.fillText('参加人数：' + userCount, 10, 25);
     }
     // ゲーム状態の更新時にローカルストレージを更新する関数
     function updateGameState(name, score) {

@@ -21,6 +21,9 @@
      * ゲームスタート画面が完了したときに発火する load イベント
      */
     document.addEventListener('DOMContentLoaded', () => {
+        // ローカルストレージをクリア
+        // localStorage.clear();
+
         const nameInput = document.getElementById('name');
         const startGameButton = document.getElementById('startGame');
 
@@ -54,7 +57,7 @@
                 alert('Please enter your name.');
             } else {
                 // // 名前をローカルストレージに保存
-                // localStorage.setItem('playerName', name);
+                localStorage.setItem('playerName', name);
 
                 // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
 
