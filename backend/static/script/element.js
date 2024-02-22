@@ -63,23 +63,6 @@ class Block{
      * ブロックを描画する
      */
     draw(){      
-        // // パスの設定を開始することを明示する
-        // this.ctx.beginPath();
-        // // 円のパスを設定する
-        // this.ctx.arc(
-        //     this.position.x,
-        //     this.position.y,
-        //     this.radius,
-        //     0.0,
-        //     Math.PI * 2.0
-        // );
-        // // 円の色を設定する
-        // this.ctx.fillStyle = this.color;
-        // // パスを閉じることを明示する
-        // this.ctx.closePath();
-        // // 設定したパスで円の描画を行う
-        // this.ctx.fill();
-
         // 画像の読み込みが完了してなければ，描画しない
         this.imageArray.map((v) => {
             if(!v.imageLoaded) return;
@@ -216,32 +199,6 @@ class Block{
         }
     }
 
-    // /**
-    //  * 選択されている時に円の枠線をつける
-    //  */
-    // drawSelectedSignal(){
-    //     if(this.selected === false){return;}
-
-    //     // パスの設定を開始することを明示する
-    //     this.ctx.beginPath();
-    //     // 円のパスを設定する
-    //     this.ctx.arc(
-    //         this.position.x,
-    //         this.position.y,
-    //         this.radius,
-    //         0.0,
-    //         Math.PI * 2.0
-    //     );
-    //     // 円の色を設定する
-    //     this.ctx.strokeStyle = '#000000';
-    //     // 線の太さを設定
-    //     this.ctx.lineWidth = 3;
-    //     // パスを閉じることを明示する
-    //     this.ctx.closePath();
-    //     // 設定したパスで円の描画を行う
-    //     this.ctx.stroke();
-    // }
-
     /**
      * 問題が回答された場合，もしくは回答できなかった場合に次の問題を設定する
      * 1.  wait timeを設定
@@ -369,7 +326,7 @@ class NumberKey{
      * @param {string} fontColor - 文字の色
      * @param {string} font - 文字のフォント
      */
-    constructor(ctx, type, x, y, radiusX, radiusY, rotation = 0.0, color = '#ffffff', fontColor = '#000000', font = '20px Arial') {
+    constructor(ctx, type, x, y, radiusX, radiusY, rotation = 0.0, color = '#32cd32', fontColor = '#000000', font = '20px Arial') {
         this.ctx = ctx;
         this.type = type;
         this.position = new Position(x,y);
@@ -398,11 +355,15 @@ class NumberKey{
             //楕円の色を設定する
             this.ctx.fillStyle = this.color;
         }
+
+        // 枠線の色を設定する
+        this.ctx.strokeStyle = '#ffffff';
         
         // パスを閉じることを明示する
         this.ctx.closePath();
         // 設定したパスで楕円の描画を行う
         this.ctx.fill();
+        this.ctx.stroke();
 
         // 数字のフォントを設定
         this.ctx.fillStyle = this.fontColor;

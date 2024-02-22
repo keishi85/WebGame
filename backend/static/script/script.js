@@ -122,6 +122,11 @@
      * @type {Array[string]}
      */
     const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
+    /**
+     * 木の画像
+     * @type {HTMLImageElement}
+     */
+    let treeImg = null;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -136,8 +141,14 @@
 
         // 初期化処理を行う
         initialize();
-        // 描画処理を行う
-        render();
+
+        // 木の画像を読み込む
+        treeImg = new Image();
+        treeImg.src = 'static/images/tree.png'; // 画像のパスを設定
+        treeImg.onload = () => {
+            // 画像の読み込みが完了したら描画を開始
+            render();
+        };
 
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
@@ -159,6 +170,8 @@
         // console.log(calcData);
         // console.log(quizData);
 
+        
+
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -177,9 +190,13 @@
      */
     function render(){
         // 描画前に画面全体を白で塗りつぶす
-        util.drawRect(0, 0, canvas.width, canvas.height, '#ffffff');
+        util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
+        // 画像をCanvasの背景に描画
+        //ctx.globalAlpha = 0.5;
+        ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
+        ctx.globalAlpha = 1.0;
         // 数字キーのエリアの描画
-        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#ff0000');
+        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32');
         // 計算問題ブロックの更新
         blockArray.map((v) => {
             v.update();
@@ -500,23 +517,23 @@
     function drawPlayerNameAndScore(){
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
-            const x = 75; // 名前の開始位置
-            const y = 50 + 25 * index; // 縦方向の位置
+            const x = 10; // 名前の開始位置
+            const y = 25 + 25 * index; // 縦方向の位置
             const separator = " : "; // 区切り文字
-            const rankText = `${player.rank}位`;
+            const rankText = `${player.rank}  `;
             const nameText = `${player.name}`;
-            const scoreText = `${player.score}点`;
+            const scoreText = `${player.score}`;
 
             // フォント等を設定
-            ctx.fillStyle = '#000000';
-            ctx.font = '20px Arial';
-            ctx.textAlign = "center";
+            ctx.fillStyle = '#ff4500';
+            ctx.font = '17px Arial Black';
+            ctx.textAlign = "left";
 
             // 順位を描画
             ctx.fillText(rankText, x, y);
             
             // 名前の最大幅を計算（仮に200ピクセルとします）
-            const nameMaxWidth = 110;
+            const nameMaxWidth = 80;
             
             // 名前を描画
             ctx.fillText(nameText, x + ctx.measureText(rankText).width, y);
