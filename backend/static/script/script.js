@@ -194,7 +194,7 @@
      * 描画処理を行う
      */
     function render(){
-        // 描画前に画面全体を白で塗りつぶす
+        // 描画前に画面全体を塗りつぶす
         util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
         // 画像をCanvasの背景に描画
         //ctx.globalAlpha = 0.5;
@@ -354,6 +354,7 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
+                            console.log(userAnswer);
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
@@ -383,10 +384,11 @@
                         // console.log(type, inputNumber);
                         break;
                     case '-':
+                        inputNumber = type + inputNumber;
                         // 解答が未入力の時，先頭にマイナスをつける
-                        if (inputNumber === null) {
-                            inputNumber = type;
-                        }
+                        // if (inputNumber === null) {
+                        //     inputNumber = type;
+                        // }
                         // console.log(type, inputNumber);
                         break;
                     case '.':
@@ -441,10 +443,13 @@
         // 値がnull(何も入力されていない)時はスキップ
         if(inputNumber === null){return;}
         // テキストの描画
-        ctx.fillStyle = '#000000';
-        ctx.font = '20px Arial';
+        ctx.fillStyle = '#32cd32';
+        ctx.strokeStyle = '#000000'
+        ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
+        ctx.lineWidth = 1;
         ctx.fillText(`${inputNumber}`,200, 390); 
+        ctx.strokeText(`${inputNumber}`,200, 390); 
     }
 
     /**
@@ -542,18 +547,24 @@
     }
     
     function drawPlayerNameAndScore(){
+        // 参加人数を表示
+        ctx.textAlign = "left";
+        ctx.font = "bold 17px 'Segoe Print', san-serif";
+        ctx.fillStyle = "#000000"
+        ctx.fillText('参加人数：' + userCount, 10, 25);
+
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
             const x = 10; // 名前の開始位置
-            const y = 25 + 25 * index; // 縦方向の位置
+            const y = 50 + 25 * index; // 縦方向の位置
             const separator = " : "; // 区切り文字
-            const rankText = `${player.rank}  `;
+            const rankText = `${Math.floor(player.rank)}  `;
             const nameText = `${player.name}`;
-            const scoreText = `${player.score}`;
+            const scoreText = `${Math.floor(player.score)}`;
 
             // フォント等を設定
-            ctx.fillStyle = '#ff4500';
-            ctx.font = '17px Arial Black';
+            ctx.fillStyle = '#000000';
+            ctx.font = "bold 17px 'Segoe Print', san-serif";
             ctx.textAlign = "left";
 
             // 順位を描画
@@ -571,6 +582,7 @@
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
         }); 
+        
     }
     // ゲーム状態の更新時にローカルストレージを更新する関数
     function updateGameState(name, score) {

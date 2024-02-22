@@ -3,3 +3,4 @@ pymongo[srv]
 pymongo
 Flask-PyMongo
 flask_pymongo
+flask_socketio

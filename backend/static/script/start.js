@@ -34,7 +34,7 @@
         createFallingImage(rightCanvas, 2);
         updateAndDrawImages(); // 画像を更新して描画
 
-        window.addEventListener('resize', adjustCanvasSize); // ウィンドウサイズが変更されたときにも調整
+        // window.addEventListener('resize', adjustCanvasSize); // ウィンドウサイズが変更されたときにも調整
 
         // ゲームの状態をローカルストレージから読み込む
         const gameState = localStorage.getItem('gameState');
@@ -53,23 +53,25 @@
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
             } else {
-                // 名前をローカルストレージに保存
-                localStorage.setItem('playerName', name);
+                // // 名前をローカルストレージに保存
+                // localStorage.setItem('playerName', name);
 
-                updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
+                // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
 
-                // 通信中の表示を有効にする
-                displayLoadingIndicator(true);
+                // // 通信中の表示を有効にする
+                // displayLoadingIndicator(true);
 
-                try {
-                    // await submitUserCount(); // 参加人数をサーバーに送信
-                    // await waitForGameStart(); // サーバーからのゲーム開始の合図を待つ
-                    window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
-                } catch (error) {
-                    console.error('An error occurred:', error);
-                    displayLoadingIndicator(false);
-                    alert('Failed to start the game. Please try again later.');
-                }
+                window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+
+                // try {
+                //     // await submitUserCount(); // 参加人数をサーバーに送信
+                //     // await waitForGameStart(); // サーバーからのゲーム開始の合図を待つ
+                //     window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                // } catch (error) {
+                //     console.error('An error occurred:', error);
+                //     displayLoadingIndicator(false);
+                //     alert('Failed to start the game. Please try again later.');
+                // }
             }
         });
     });
