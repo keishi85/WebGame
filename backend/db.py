@@ -58,8 +58,9 @@ def add_question(questions_collection, question, choice1, choice2, choice3, choi
         questions_collection.insert_one({'type': 'quiz', 'question': question, 'choice1': choice1, 'choice2': choice2, 'choice3': choice3, 'choice4': choice4, 'answer': answer})
         # print(f"Added: {question} -> {choice1} -> {choice2} -> {choice3} -> {choice4} -> {answer}")
     else:
+       pass
         # 同じ質問が既に存在する場合は追加しない
-        print(f"Already exists: {question} -> {answer}")
+        # print(f"Already exists: {question} -> {answer}")
 
 
 # 計算問題を追加する関数

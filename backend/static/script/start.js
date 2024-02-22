@@ -46,7 +46,7 @@
         //     window.location.href = '/game';
         // }
     
-        startGameButton.addEventListener('click', () => {
+        startGameButton.addEventListener('click', async () => {
             const name = nameInput.value.trim(); // 名前入力の前後の空白を削除
     
             if (name === '') {
@@ -58,16 +58,23 @@
 
                 updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
 
-                // 通信中の表示を有効にする
-                displayLoadingIndicator(true);
-
                 try {
-                    // await submitUserCount(); // 参加人数をサーバーに送信
-                    // await waitForGameStart(); // サーバーからのゲーム開始の合図を待つ
-                    window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                    await submitUserCount(); // 参加人数をサーバーに送信
+
+                    // const socket = io();  // Socket.IOのクライアントインスタンスを作成
+
+                    toggleLoadingIndicator(true); // 待機する表示
+
+                    // ゲーム開始の合図をポーリングで確認する関数を呼び出す
+                    pollForGameStart();
+
+                    // サーバーからのゲーム開始の合図を受信したらゲームページに遷移
+                    // socket.on('game_start', (data) => {
+                    //     console.log(data.message);  // サーバーからのメッセージを表示
+                    //     window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                    // });
                 } catch (error) {
                     console.error('An error occurred:', error);
-                    displayLoadingIndicator(false);
                     alert('Failed to start the game. Please try again later.');
                 }
             }
@@ -171,4 +178,29 @@ async function submitUserCount() {
     });
 }
 
+// ゲーム開始の合図をポーリングで確認する
+function pollForGameStart() {
+    fetch('/check_game_start')
+        .then(response => response.json())
+        .then(data => {
+            if (data.game_started) {
+                // ゲーム開始の合図があればゲームページに遷移
+                window.location.href = `/game?name=${encodeURIComponent(name)}`;
+            } else {
+                // まだゲーム開始の合図がなければ、数秒後に再度確認
+                setTimeout(pollForGameStart, 3000);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// 通信の状態に応じてローディングインジケーターを表示または非表示にする関数
+function toggleLoadingIndicator(show) {
+    const loadingElement = document.getElementById('loading');
+    if (show) {
+        loadingElement.style.display = 'block'; // 通信中に表示
+    } else {
+        loadingElement.style.display = 'none'; // 通信終了後に非表示
+    }
+}
 })();

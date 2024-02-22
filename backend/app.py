@@ -9,6 +9,8 @@ socketio = SocketIO(app)
 
 user_count = 0
 required_user_count = 0
+# ゲーム開始の状態を管理する変数
+game_started = False
 
 # MongoDBへの接続設定
 app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
@@ -88,7 +90,7 @@ def set_user_count():
 
     data = request.get_json()
     user_count += 1
-    required_user_count = data.get('userCount')
+    required_user_count = int(data.get('userCount'))
 
     print(user_count)
 
@@ -96,12 +98,27 @@ def set_user_count():
     check_start_condition()
     return jsonify({'message': 'User count updated'})
 
+@app.route('/check_game_start')
+def check_game_start():
+    # ゲームが開始されたかどうかを返す
+    check_start_condition()
+    global game_started
+    if game_started:
+        print(f"user : {user_count} / required : {required_user_count}")
+        return jsonify({'game_started': True})
+    else:
+        return jsonify({'game_started': False})
+
+# 人数があつまったかどうかをチェックする関数
 def check_start_condition():
     global user_count
     if user_count >= required_user_count:
-        socketio.emit('game_start', {'message': 'Game Start'})
+        # ゲーム開始の状態を更新
+        global game_started
+        game_started = True
         user_count = 0  # カウンターをリセット
 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)
+    # socketio.run(app, host="0.0.0.0", port=5001, debug=True)
