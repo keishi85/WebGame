@@ -394,11 +394,12 @@
                         // console.log(type, inputNumber);
                         break;
                     case '-':
-                        inputNumber = type + inputNumber;
-                        // 解答が未入力の時，先頭にマイナスをつける
-                        // if (inputNumber === null) {
-                        //     inputNumber = type;
-                        // }
+                        //解答が未入力の時，先頭にマイナスをつける
+                        if (inputNumber === null) {
+                            inputNumber = type;
+                        } else {
+                            inputNumber = type + inputNumber;
+                        }
                         // console.log(type, inputNumber);
                         break;
                     case '.':
@@ -453,7 +454,7 @@
         // 値がnull(何も入力されていない)時はスキップ
         if(inputNumber === null){return;}
         // テキストの描画
-        ctx.fillStyle = '#32cd32';
+        ctx.fillStyle = '#ff0000';
         ctx.strokeStyle = '#000000'
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
