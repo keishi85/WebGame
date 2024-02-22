@@ -76,7 +76,7 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = 0;   
+    let score = localStorage.getItem('score');   
     /**
      * プレイヤーの名前を格納する変数
      * @type {string}
@@ -122,6 +122,16 @@
      * @type {Array[string]}
      */
     const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
+    /**
+     * ユーザー数をカウント
+     * @type {number}
+     */
+    let userCount = 0;
+    /**
+     * 木の画像
+     * @type {HTMLImageElement}
+     */
+    let treeImg = null;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -136,8 +146,14 @@
 
         // 初期化処理を行う
         initialize();
-        // 描画処理を行う
-        render();
+
+        // 木の画像を読み込む
+        treeImg = new Image();
+        treeImg.src = 'static/images/tree.png'; // 画像のパスを設定
+        treeImg.onload = () => {
+            // 画像の読み込みが完了したら描画を開始
+            render();
+        };
 
         // クリックイベントとタッチイベントを追加
         canvas.addEventListener('click', ClickOrTouch);
@@ -159,6 +175,8 @@
         // console.log(calcData);
         // console.log(quizData);
 
+        
+
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -176,10 +194,14 @@
      * 描画処理を行う
      */
     function render(){
-        // 描画前に画面全体を白で塗りつぶす
-        util.drawRect(0, 0, canvas.width, canvas.height, '#ffffff');
+        // 描画前に画面全体を塗りつぶす
+        util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
+        // 画像をCanvasの背景に描画
+        //ctx.globalAlpha = 0.5;
+        ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
+        ctx.globalAlpha = 1.0;
         // 数字キーのエリアの描画
-        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#ff0000');
+        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32');
         // 計算問題ブロックの更新
         blockArray.map((v) => {
             v.update();
@@ -214,9 +236,21 @@
              // 入力された数字の更新
             drawInputNumber();
         }      
-       
+
         // スコアの更新
-        //drawScore();
+        sendScore(playerName, score).then(() => {
+            getScores(playerName);
+        });
+
+        // 復帰できるようにローカルに保存
+        updateGameState(playerName, score);
+       
+        // プレイヤーの人数を取得
+        getUserCount();
+
+        // ユーザーの人数を描画
+        drawUserNumber();
+
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
         // フレーム更新ごとに再起呼び出し
@@ -266,6 +300,11 @@
             numberKeyCoordinateArray[13][2],
             numberKeyCoordinateArray[13][3]
         );
+        
+        // 1回送る
+        sendScore(playerName, 0).then(() => {
+            getScores(playerName);
+        });
     }
 
     /**
@@ -325,6 +364,7 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
+                            console.log(userAnswer);
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
@@ -337,9 +377,9 @@
                                     calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
-                                    sendScore(playerName, score).then(() => {
-                                        getScores(playerName);
-                                    });
+                                    // sendScore(playerName, score).then(() => {
+                                    //     getScores(playerName);
+                                    // });
                                     break;
                                 }
                             }
@@ -354,9 +394,11 @@
                         // console.log(type, inputNumber);
                         break;
                     case '-':
-                        // 解答が未入力の時，先頭にマイナスをつける
+                        //解答が未入力の時，先頭にマイナスをつける
                         if (inputNumber === null) {
                             inputNumber = type;
+                        } else {
+                            inputNumber = type + inputNumber;
                         }
                         // console.log(type, inputNumber);
                         break;
@@ -412,10 +454,13 @@
         // 値がnull(何も入力されていない)時はスキップ
         if(inputNumber === null){return;}
         // テキストの描画
-        ctx.fillStyle = '#000000';
-        ctx.font = '20px Arial';
+        ctx.fillStyle = '#ff0000';
+        ctx.strokeStyle = '#000000'
+        ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
+        ctx.lineWidth = 1;
         ctx.fillText(`${inputNumber}`,200, 390); 
+        ctx.strokeText(`${inputNumber}`,200, 390); 
     }
 
     /**
@@ -461,6 +506,7 @@
      * @param {num} score 
      */
     function sendScore(playerName, score) {
+        console.log(playerName, score);
         return fetch('/submit_score', {
             method: 'POST',
             headers: {
@@ -490,33 +536,48 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log(data);  // データをコンソールに表示
+                // console.log(data);  // データをコンソールに表示
                 scoresData = data;
             })
             .catch(error => {
                 console.error('Error:', error);
             });
     }
+    
+    // ユーザーの人数を取得する関数
+    function getUserCount() {
+        // ユーザーの人数を取得するためのエンドポイントにリクエストを送信
+        fetch('/get_user_count')
+            .then(response => response.json())
+            .then(data => {
+                // ユーザーの人数を表示
+                userCount = data.user_count;
+            })
+            .catch(error => {
+                console.error('Error fetching user count:', error);
+            });
+    }
+    
     function drawPlayerNameAndScore(){
         // プレイヤー，順位，スコアを表示
         scoresData.forEach((player, index) => {
-            const x = 75; // 名前の開始位置
+            const x = 10; // 名前の開始位置
             const y = 50 + 25 * index; // 縦方向の位置
             const separator = " : "; // 区切り文字
-            const rankText = `${player.rank}位`;
+            const rankText = `${Math.floor(player.rank)}  `;
             const nameText = `${player.name}`;
-            const scoreText = `${player.score}点`;
+            const scoreText = `${Math.floor(player.score)}`;
 
             // フォント等を設定
             ctx.fillStyle = '#000000';
-            ctx.font = '20px Arial';
-            ctx.textAlign = "center";
+            ctx.font = "bold 17px 'Segoe Print', san-serif";
+            ctx.textAlign = "left";
 
             // 順位を描画
             ctx.fillText(rankText, x, y);
             
             // 名前の最大幅を計算（仮に200ピクセルとします）
-            const nameMaxWidth = 110;
+            const nameMaxWidth = 80;
             
             // 名前を描画
             ctx.fillText(nameText, x + ctx.measureText(rankText).width, y);
@@ -527,6 +588,20 @@
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
         }); 
+        
+    }
+
+    function drawUserNumber(){
+        // 参加人数を表示
+        ctx.textAlign = "left";
+        ctx.font = "bold 17px 'Segoe Print', san-serif";
+        ctx.fillStyle = "#ff0000";
+        ctx.fillText('参加人数：' + userCount, 10, 25);
+    }
+    // ゲーム状態の更新時にローカルストレージを更新する関数
+    function updateGameState(name, score) {
+        const state = { name: name, score: score };
+        localStorage.setItem('gameState', JSON.stringify(state));
     }
 
 })();

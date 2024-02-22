@@ -5,6 +5,9 @@
         "/static/images/orange.png",
         "/static/images/peach.png"
     ];
+
+    // ユーザー数をカウントする変数
+    let userCount = 0;
     
     // 落下する画像オブジェクトの配列
     const fallingImages = [];
@@ -18,6 +21,9 @@
      * ゲームスタート画面が完了したときに発火する load イベント
      */
     document.addEventListener('DOMContentLoaded', () => {
+        // ローカルストレージをクリア
+        // localStorage.clear();
+
         const nameInput = document.getElementById('name');
         const startGameButton = document.getElementById('startGame');
 
@@ -31,20 +37,49 @@
         createFallingImage(rightCanvas, 2);
         updateAndDrawImages(); // 画像を更新して描画
 
-        window.addEventListener('resize', adjustCanvasSize); // ウィンドウサイズが変更されたときにも調整
+        // window.addEventListener('resize', adjustCanvasSize); // ウィンドウサイズが変更されたときにも調整
+
+        // ゲームの状態をローカルストレージから読み込む
+        const gameState = localStorage.getItem('gameState');
+        // if (gameState) {
+        //     const state = JSON.parse(gameState);
+        //     // 名前入力欄に前回の名前を表示
+        //     nameInput.value = state.name;
+        //     // ゲームのページに遷移
+        //     window.location.href = '/game';
+        // }
     
-        startGameButton.addEventListener('click', () => {
+        startGameButton.addEventListener('click', async () => {
             const name = nameInput.value.trim(); // 名前入力の前後の空白を削除
     
             if (name === '') {
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
             } else {
-                // 名前をローカルストレージに保存
+                // // 名前をローカルストレージに保存
                 localStorage.setItem('playerName', name);
-    
-                // ゲームのページに遷移
-                window.location.href = '/game';
+
+                // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
+
+                try {
+                    await submitUserCount(); // 参加人数をサーバーに送信
+
+                    // const socket = io();  // Socket.IOのクライアントインスタンスを作成
+
+                    toggleLoadingIndicator(true); // 待機する表示
+
+                    // ゲーム開始の合図をポーリングで確認する関数を呼び出す
+                    pollForGameStart();
+
+                    // サーバーからのゲーム開始の合図を受信したらゲームページに遷移
+                    // socket.on('game_start', (data) => {
+                    //     console.log(data.message);  // サーバーからのメッセージを表示
+                    //     window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
+                    // });
+                } catch (error) {
+                    console.error('An error occurred:', error);
+                    alert('Failed to start the game. Please try again later.');
+                }
             }
         });
     });
@@ -119,5 +154,56 @@ function draw(ctx, canvas){
         const targetHeight = 100; // 目的の高さ
         ctx.drawImage(obj.image, obj.x, obj.y, targetWidth, targetHeight); // 画像を描画
     });
+}
+
+// ゲーム状態の更新時にローカルストレージを更新する関数
+function updateGameState(name, score) {
+    const state = { name: name, score: score };
+    localStorage.setItem('gameState', JSON.stringify(state));
+}
+
+// ユーザー数をサーバーに送信する関数
+async function submitUserCount() {
+    const userCount = document.getElementById('userCount').value;
+    fetch('/set_user_count', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userCount: userCount}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('User count:', data.userCount);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+// ゲーム開始の合図をポーリングで確認する
+function pollForGameStart() {
+    fetch('/check_game_start')
+        .then(response => response.json())
+        .then(data => {
+            if (data.game_started) {
+                // ゲーム開始の合図があればゲームページに遷移
+                window.location.href = `/game?name=${encodeURIComponent(name)}`;
+            } else {
+                // まだゲーム開始の合図がなければ、数秒後に再度確認
+                setTimeout(pollForGameStart, 3000);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// 通信の状態に応じてローディングインジケーターを表示または非表示にする関数
+function toggleLoadingIndicator(show) {
+    const loadingElement = document.getElementById('loading');
+    if (show) {
+        loadingElement.style.display = 'block'; // 通信中に表示
+    } else {
+        loadingElement.style.display = 'none'; // 通信終了後に非表示
+    }
 }
 })();

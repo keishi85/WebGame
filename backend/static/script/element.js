@@ -57,29 +57,17 @@ class Block{
         this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
         this.imageArray = []; // Imageインスタンスを格納する配列
+        // テキストのスタイル設定
+        this.ctx.font = '20px Arial'; // フォントサイズとフォント種類
+        this.ctx.fillStyle = '#ffffff'; // テキストの塗りつぶし色（白）
+        this.ctx.strokeStyle = '#000000'; // テキストの枠線の色（黒）
+        this.ctx.lineWidth = 3; // 枠線の太さ
     }
 
     /**
      * ブロックを描画する
      */
     draw(){      
-        // // パスの設定を開始することを明示する
-        // this.ctx.beginPath();
-        // // 円のパスを設定する
-        // this.ctx.arc(
-        //     this.position.x,
-        //     this.position.y,
-        //     this.radius,
-        //     0.0,
-        //     Math.PI * 2.0
-        // );
-        // // 円の色を設定する
-        // this.ctx.fillStyle = this.color;
-        // // パスを閉じることを明示する
-        // this.ctx.closePath();
-        // // 設定したパスで円の描画を行う
-        // this.ctx.fill();
-
         // 画像の読み込みが完了してなければ，描画しない
         this.imageArray.map((v) => {
             if(!v.imageLoaded) return;
@@ -184,19 +172,27 @@ class Block{
             let addScore = 0;
             switch(fruit){
                 case 'PEACH':
-                    addScore = Math.floor(3 * (this.area - this.position.y) * 100) / 100; // 小数点第2位で切り捨て
+                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    //addScore = Math.floor(3 * (this.area - this.position.y) * 100) / 100; // 小数点第2位で切り捨て
+                    console.log(addScore);
                     break;
                 
                 case 'APPLE':
-                    addScore = Math.floor(2 * (this.area - this.position.y) * 100) / 100;
+                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    //addScore = Math.floor(2 * (this.area - this.position.y) * 100) / 100;
+                    console.log(addScore);
                     break;
                 
                 case 'ORANGE':
-                    addScore = Math.floor(1 * (this.area - this.position.y) * 100) / 100;
+                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    //addScore = Math.floor(1 * (this.area - this.position.y) * 100) / 100;
+                    console.log(addScore);
                     break;
                 
                 case 'LEMON':
-                    addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
+                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    //addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
+                    console.log(addScore);
                     break;
             }
 
@@ -209,38 +205,12 @@ class Block{
             // // 選択を解除
             //this.selected = false;
             console.log('OK');
-            return  addScore;
+            return  Number(addScore);
         } else {
             console.log('not OK');
             return 0;
         }
     }
-
-    // /**
-    //  * 選択されている時に円の枠線をつける
-    //  */
-    // drawSelectedSignal(){
-    //     if(this.selected === false){return;}
-
-    //     // パスの設定を開始することを明示する
-    //     this.ctx.beginPath();
-    //     // 円のパスを設定する
-    //     this.ctx.arc(
-    //         this.position.x,
-    //         this.position.y,
-    //         this.radius,
-    //         0.0,
-    //         Math.PI * 2.0
-    //     );
-    //     // 円の色を設定する
-    //     this.ctx.strokeStyle = '#000000';
-    //     // 線の太さを設定
-    //     this.ctx.lineWidth = 3;
-    //     // パスを閉じることを明示する
-    //     this.ctx.closePath();
-    //     // 設定したパスで円の描画を行う
-    //     this.ctx.stroke();
-    // }
 
     /**
      * 問題が回答された場合，もしくは回答できなかった場合に次の問題を設定する
@@ -369,7 +339,7 @@ class NumberKey{
      * @param {string} fontColor - 文字の色
      * @param {string} font - 文字のフォント
      */
-    constructor(ctx, type, x, y, radiusX, radiusY, rotation = 0.0, color = '#ffffff', fontColor = '#000000', font = '20px Arial') {
+    constructor(ctx, type, x, y, radiusX, radiusY, rotation = 0.0, color = '#32cd32', fontColor = '#000000', font = '20px Arial') {
         this.ctx = ctx;
         this.type = type;
         this.position = new Position(x,y);
@@ -392,17 +362,24 @@ class NumberKey{
         // 楕円のパスを設定する
         this.ctx.ellipse(this.position.x, this.position.y, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
         
+        // 押された時
         if(this.isPressed){
             this.ctx.fillStyle = '#808080';
         } else {
             //楕円の色を設定する
             this.ctx.fillStyle = this.color;
         }
+
+        // 枠線の色を設定する
+        this.ctx.strokeStyle = '#ffffff';
+
+        this.ctx.lineWidth = 2;
         
         // パスを閉じることを明示する
         this.ctx.closePath();
         // 設定したパスで楕円の描画を行う
         this.ctx.fill();
+        this.ctx.stroke();
 
         // 数字のフォントを設定
         this.ctx.fillStyle = this.fontColor;

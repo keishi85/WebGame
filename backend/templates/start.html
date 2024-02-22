@@ -6,13 +6,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/start.css">
+    <!-- Socket.IOクライアントライブラリの読み込み -->
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
 </head>
 <body>
     <div class="game-start-container">
-        <h1 class="mochiy-pop-one-regular">スイカゲーム</h1>
+        <h1 class="mochiy-pop-one-regular">計算ゲーム</h1>
+        <!-- 通信中の表示用の要素 -->
+        <div id="loading" style="display: none;">通信中...</div>
+
         <form id="nameForm">
             <label for="name">名前:</label>
             <input type="text" id="name" name="name" placeholder="あなたの名前">
+            <form id="userCountForm">
+                <label for="userCount">ユーザー数:</label>
+                <input type="number" id="userCount" name="userCount" required>
+            </form>        
             <button type="button" id="startGame" class="mochiy-pop-one-regular">ゲームスタート</button>
         </form>
     </div>
@@ -52,8 +61,6 @@
     <canvas id="leftCanvas" width="100" height="100"></canvas>
     <canvas id="rightCanvas" width="100" height="100"></canvas>
 
-
-    
     <script src="../static/script/start.js"></script>
 </body>
 </html>
