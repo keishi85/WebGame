@@ -187,7 +187,8 @@
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
+        quizInstance.loadImage();
     }
 
     /**

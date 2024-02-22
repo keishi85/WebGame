@@ -410,7 +410,7 @@ class Quiz{
      * @param {Array<{ question: string, choices: string[], answer: string }>} quizData - クイズの配列
      * @param {string} color - ブロックの色 
      */
-    constructor(ctx, x, y, width, height, life, area, quizData, color = '#0000ff'){
+    constructor(ctx, x, y, width, height, life, area, quizData, imgPath, color = '#0000ff'){
         this.ctx = ctx;
         this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
@@ -422,6 +422,7 @@ class Quiz{
         this.speed = 0.2;
         this.quizData = quizData;
         this.quizIndex = 0;
+        this.imgPath = imgPath;
         this.setChoicesPosition();
     }
      /**
@@ -431,7 +432,13 @@ class Quiz{
         // 円の色を設定する
         this.ctx.fillStyle = this.color;
         // 矩形を描画
-        this.ctx.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+        //this.ctx.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+        this.ctx.drawImage(this.img,
+            this.position.x - this.width / 2,
+            this.position.y - this.height / 2,
+            this.width,
+            this.height
+            );
          
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
@@ -445,9 +452,9 @@ class Quiz{
         // let y = this.position.y + 5;
         // this.ctx.fillText(quiz.question, x, y, this.width - 10);
 
-        let lines = this.breakLine(quiz.question, this.width);
+        let lines = this.breakLine(quiz.question, this.width * 3 / 4);
         for(let i = 0; i < lines.length; i++){
-            this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 4 + i * 15);
+            this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 5 + i * 15);
         }
     }
 
@@ -548,6 +555,7 @@ class Quiz{
         }
     }
 
+    // 文字列を分割し，自動的に改行する
     breakLine(text, maxWidth){
         let words = text.split('');
         let lines = [];
@@ -565,6 +573,24 @@ class Quiz{
         }
         lines.push(currentLine);
         return lines;
+    }
+
+    // 画像の読み込みが完了したときに呼ばれるコールバック関数
+    onImageLoad(){
+        this.imageLoaded = true;
+    }
+
+    // 画像の読み込みが失敗したときに呼ばれるコールバック関数
+    onImageError(){
+        console.error("Failed to load image:", this.imageUrl);
+    }
+
+    // 画像の読み込み
+    loadImage(){
+        this.img = new Image();
+        this.img.onload = this.onImageLoad.bind(this);
+        this.img.onerror = this.onImageError.bind(this);
+        this.img.src = this.imgPath;
     }
 
 }
