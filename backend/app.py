@@ -9,6 +9,8 @@ socketio = SocketIO(app)
 
 user_count = 0
 required_user_count = 0
+# 必要人数がスーパーユーザによって設定されたかを管理する変数
+is_user_count_set = False
 # ゲーム開始の状態を管理する変数
 game_started = False
 
@@ -85,14 +87,34 @@ def get_user_count():
 # 参加人数を受け取るエンドポイント
 @app.route('/set_user_count', methods=['POST'])
 def set_user_count():
-    global user_count
     global required_user_count
+    global is_user_count_set
 
     data = request.get_json()
-    user_count += 1
     required_user_count = int(data.get('userCount'))
 
-    print(user_count)
+    is_user_count_set = True
+
+    # 全ユーザーが揃ったかどうかをチェック
+    check_start_condition()
+    return jsonify({'message': 'User count updated'})
+
+# 参加したことを確認するエンドポイント
+@app.route('/user_count', methods=['POST'])
+def count_user():
+    global user_count
+    user_count += 1
+
+    # ユーザー名を取得
+    data = request.get_json()
+    name = data.get('userName')
+
+    # 名前で検索して該当するものがあれば得点を上書き、なければ新規に挿入
+    # mongo.db.scores.update_one(
+    #     {'name': name},
+    #     {'$set': {'score': 0}},
+    #     upsert=True
+    # )
 
     # 全ユーザーが揃ったかどうかをチェック
     check_start_condition()
@@ -112,11 +134,16 @@ def check_game_start():
 # 人数があつまったかどうかをチェックする関数
 def check_start_condition():
     global user_count
-    if user_count >= required_user_count:
+    if user_count >= required_user_count and is_user_count_set:
         # ゲーム開始の状態を更新
         global game_started
         game_started = True
         user_count = 0  # カウンターをリセット
+
+# スーパーユーザーでアクセス
+@app.route('/superuser')
+def super_user():
+    return render_template('superUser.html')
 
 
 if __name__ == '__main__':
