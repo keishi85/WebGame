@@ -76,7 +76,12 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = localStorage.getItem('score');   
+    let score = localStorage.getItem('score');
+    if (score === null) {
+        score = 0; // デフォルト値を設定
+    } else {
+        score = parseInt(score, 10); // localStorageから取得した値は文字列なので数値に変換
+    }
     /**
      * プレイヤーの名前を格納する変数
      * @type {string}
@@ -161,6 +166,11 @@
 
 
     }, false);
+
+    // ページのロードが完了したときに発火する load イベント
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGameState();    
+    });
 
     /**
      * canvas やコンテキストを初期化する
@@ -302,9 +312,9 @@
         );
         
         // 1回送る
-        sendScore(playerName, 0).then(() => {
-            getScores(playerName);
-        });
+        // sendScore(playerName, 0).then(() => {
+        //     getScores(playerName);
+        // });
     }
 
     /**
@@ -364,7 +374,6 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
-                            console.log(userAnswer);
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
@@ -436,7 +445,7 @@
         for(let i = 0; i < 4; ++i){
             let position = quizInstance.choicesPosition[i];
             if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
-                console.log(i);
+                // console.log(i);
                 // 正解時はスコア加算
                 let judgement = quizInstance.checkAnswer(i);
                 if(judgement !== 0){
@@ -506,7 +515,7 @@
      * @param {num} score 
      */
     function sendScore(playerName, score) {
-        console.log(playerName, score);
+        // console.log(playerName, score);
         return fetch('/submit_score', {
             method: 'POST',
             headers: {
@@ -518,7 +527,7 @@
         .then(response => response.json())
         // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
-            console.log('Success:', data);
+            // console.log('Success:スコアを送ることに成功');
             return data; // ここでPromiseを解決
         })
         .catch((error) => {
@@ -603,5 +612,12 @@
         const state = { name: name, score: score };
         localStorage.setItem('gameState', JSON.stringify(state));
     }
-
+    // ゲームがリロードされた際に呼び出される関数
+    function loadGameState() {
+        const state = JSON.parse(localStorage.getItem('gameState'));
+        if (state) {
+            playerName = state.name;
+            score = state.score;
+        }
+    }
 })();
