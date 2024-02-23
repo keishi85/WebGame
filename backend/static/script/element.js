@@ -424,6 +424,7 @@ class Quiz{
         this.quizIndex = 0;
         this.imgPath = imgPath;
         this.setChoicesPosition();
+        this.isPressed = [false, false, false, false];
     }
      /**
      * ブロックを描画する

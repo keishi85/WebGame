@@ -460,8 +460,8 @@
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
         ctx.lineWidth = 1;
-        ctx.fillText(`${inputNumber}`,200, 390); 
-        ctx.strokeText(`${inputNumber}`,200, 390); 
+        ctx.fillText(`A:${inputNumber}`,100, 390); 
+        ctx.strokeText(`A:${inputNumber}`,100, 390); 
     }
 
     /**
