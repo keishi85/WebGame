@@ -6,8 +6,7 @@
         "/static/images/peach.png"
     ];
 
-    // ユーザー数をカウントする変数
-    let userCount = 0;
+    let name = null; // プレイヤーの名前
     
     // 落下する画像オブジェクトの配列
     const fallingImages = [];
@@ -50,7 +49,7 @@
         // }
     
         startGameButton.addEventListener('click', async () => {
-            const name = nameInput.value.trim(); // 名前入力の前後の空白を削除
+            name = nameInput.value.trim(); // 名前入力の前後の空白を削除
     
             if (name === '') {
                 // 名前が入力されていない場合は警告を表示
@@ -62,7 +61,7 @@
                 // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
 
                 try {
-                    await submitUserCount(); // 参加人数をサーバーに送信
+                    await submitUser(); // 参加人数をサーバーに送信
 
                     // const socket = io();  // Socket.IOのクライアントインスタンスを作成
 
@@ -162,19 +161,19 @@ function updateGameState(name, score) {
     localStorage.setItem('gameState', JSON.stringify(state));
 }
 
-// ユーザー数をサーバーに送信する関数
-async function submitUserCount() {
-    const userCount = document.getElementById('userCount').value;
-    fetch('/set_user_count', {
+// 自身が参加したことをサーバーに送信する関数
+async function submitUser() {
+    console.log(name);
+    fetch('/user_count', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({userCount: userCount}),
+        body: JSON.stringify({userName: name}),
     })
     .then(response => response.json())
     .then(data => {
-        console.log('User count:', data.userCount);
+        console.log(data.message);
     })
     .catch((error) => {
         console.error('Error:', error);

@@ -76,7 +76,12 @@
      * プレイヤーのスコアを格納する変数
      * @type {number}
      */
-    let score = localStorage.getItem('score');   
+    let score = localStorage.getItem('score');
+    if (score === null) {
+        score = 0; // デフォルト値を設定
+    } else {
+        score = parseInt(score, 10); // localStorageから取得した値は文字列なので数値に変換
+    }
     /**
      * プレイヤーの名前を格納する変数
      * @type {string}
@@ -111,7 +116,7 @@
      * この数の計算問題を解いた後にクイズが出る
      * @type {number}
      */
-    const CHANGE_CALCULATION_QUESTION = 3;
+    const CHANGE_CALCULATION_QUESTION = 5;
     /**
      * 出る問題の種類を表す変数(Calculation or Quiz)
      * @type {string}
@@ -161,6 +166,11 @@
 
 
     }, false);
+
+    // ページのロードが完了したときに発火する load イベント
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGameState();    
+    });
 
     /**
      * canvas やコンテキストを初期化する
@@ -302,10 +312,10 @@
             numberKeyCoordinateArray[13][3]
         );
         
-        // 1回送る
-        sendScore(playerName, 0).then(() => {
-            getScores(playerName);
-        });
+        // // 1回送る
+        // sendScore(playerName, 0).then(() => {
+        //     getScores(playerName);
+        // });
     }
 
     /**
@@ -365,7 +375,7 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
-                            console.log(userAnswer);
+                            // console.log(userAnswer);
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
@@ -611,6 +621,14 @@
     function updateGameState(name, score) {
         const state = { name: name, score: score };
         localStorage.setItem('gameState', JSON.stringify(state));
+    }
+
+    function loadGameState() {
+        const state = JSON.parse(localStorage.getItem('gameState'));
+        if (state) {
+            playerName = state.name;
+            score = state.score;
+        }
     }
 
 })();

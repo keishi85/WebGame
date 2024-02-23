@@ -16,6 +16,7 @@ html, body {
     background-color: #efa051;
     color: #FF4500;
     font-family: 'Mochiy Pop One', sans-serif;
+    overflow-y: auto; /* ウィンドウの高さを小さくしても全体がスクロール可能にする */
 }
  
 canvas {
