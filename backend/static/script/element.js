@@ -506,7 +506,6 @@ class Quiz{
     drawChoices(){
 
         for(let i = 0; i < 4; ++i){
-
             // 色を設定する
             if(this.isPressed[i]){
                 // 押された時
@@ -531,6 +530,13 @@ class Quiz{
             let x = this.choicesPosition[i].x + this.choicesWidth / 2;
             let y = this.choicesPosition[i].y + this.choicesHeight / 2;
             this.ctx.fillText(this.quizData[this.quizIndex].choices[i], x ,y);
+
+            // まるばつを描画
+            if(this.correctOrIncorrect[i] === true){
+                this.drawCircle(i);
+            } else if(this.correctOrIncorrect[i] === false){
+                this.drawCross(i);
+            }
         }
     }
 
@@ -547,22 +553,54 @@ class Quiz{
 
         if(quiz.choices[userAnswer] === quiz.answer){
 
+            // trueのセット
+            this.correctOrIncorrect[userAnswer] = true;
+
             // スコア計算(仮に1000点)
             let addScore = 1000;
 
-            console.log('OK');
-            
-            //ライフを0に
-            this.life = 0;
-            // 次の問題にインデックスを移動
-            this.quizIndex += 1
-            // 初期位置に移動
-            this.position.set(this.initialPosition.x, this.initialPosition.y);
+            // 1秒後にリセット
+            setTimeout(() => {
+                //ライフを0に
+                this.life = 0;
+                // 次の問題にインデックスを移動
+                this.quizIndex += 1
+                // 初期位置に移動
+                this.position.set(this.initialPosition.x, this.initialPosition.y);
+                // nullに戻す
+                this.correctOrIncorrect[userAnswer] = null;
+            }, 1000);
 
-            return  addScore;
+            return addScore;
+
+            // console.log('OK');
+            
+            // //ライフを0に
+            // this.life = 0;
+            // // 次の問題にインデックスを移動
+            // this.quizIndex += 1
+            // // 初期位置に移動
+            // this.position.set(this.initialPosition.x, this.initialPosition.y);
+
+            // return  addScore;
         } else {
-            console.log('not OK');
+            // falseにセット
+            this.correctOrIncorrect[userAnswer] = false;
+            // 1秒後にリセット
+            setTimeout(() => {
+                //ライフを0に
+                this.life = 0;
+                // 次の問題にインデックスを移動
+                this.quizIndex += 1
+                // 初期位置に移動
+                this.position.set(this.initialPosition.x, this.initialPosition.y);
+                // nullに戻す
+                this.correctOrIncorrect[userAnswer] = null;
+            }, 1000);
             return 0;
+
+            // console.log('not OK');
+            // return 0;
         }
     }
 
@@ -609,13 +647,20 @@ class Quiz{
         this.img.src = this.imgPath;
     }
 
-    drawCircle() {
+    drawCircle(choice) {
         // 円を描画
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
-        ctx.fillStyle = 'red';
-        ctx.fill();
-        ctx.closePath();
+        this.ctx.beginPath();
+        this.ctx.arc(
+            this.choicesPosition[choice].x + this.choicesWidth / 2,
+            this.choicesPosition[choice].y + this.choicesHeight / 2,
+            this.choicesHeight / 2, 
+            0, 
+            Math.PI * 2
+            );
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+        this.ctx.closePath();
     
         // // 1秒後に描画を消す
         // setTimeout(() => {
@@ -623,18 +668,18 @@ class Quiz{
         // }, 1000);
     }
 
-    drawCross() {
+    drawCross(choice) {
         // バツを描画
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 - 50, canvas.height / 2 - 50);
-        ctx.lineTo(canvas.width / 2 + 50, canvas.height / 2 + 50);
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 5;
-        ctx.stroke();
-        ctx.moveTo(canvas.width / 2 + 50, canvas.height / 2 - 50);
-        ctx.lineTo(canvas.width / 2 - 50, canvas.height / 2 + 50);
-        ctx.stroke();
-        ctx.closePath();
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.choicesPosition[choice].x, this.choicesPosition[choice].y);
+        this.ctx.lineTo(this.choicesPosition[choice].x + this.choicesWidth, this.choicesPosition[choice].y + this.choicesHeight);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+        this.ctx.moveTo(this.choicesPosition[choice].x, this.choicesPosition[choice].y + this.choicesHeight);
+        this.ctx.lineTo(this.choicesPosition[choice].x + this.choicesWidth, this.choicesPosition[choice].y);
+        this.ctx.stroke();
+        this.ctx.closePath();
     
         // // 1秒後に描画を消す
         // setTimeout(() => {
