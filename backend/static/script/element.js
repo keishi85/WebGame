@@ -361,12 +361,13 @@ class NumberKey{
         this.ctx.beginPath();
         // 楕円のパスを設定する
         this.ctx.ellipse(this.position.x, this.position.y, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
-        
-        // 押された時
+
+        // 色を設定する
         if(this.isPressed){
+            // 押された時
             this.ctx.fillStyle = '#808080';
         } else {
-            //楕円の色を設定する
+            //押されていない時
             this.ctx.fillStyle = this.color;
         }
 
@@ -425,6 +426,7 @@ class Quiz{
         this.imgPath = imgPath;
         this.setChoicesPosition();
         this.isPressed = [false, false, false, false];
+        this.correctOrIncorrect = [null, null, null, null];
     }
      /**
      * ブロックを描画する
@@ -432,8 +434,7 @@ class Quiz{
      draw(){      
         // 円の色を設定する
         this.ctx.fillStyle = this.color;
-        // 矩形を描画
-        //this.ctx.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+        // 落ち葉を描画
         this.ctx.drawImage(this.img,
             this.position.x - this.width / 2,
             this.position.y - this.height / 2,
@@ -449,10 +450,6 @@ class Quiz{
         let quiz = this.quizData[this.quizIndex];
         
         // 問題文を表示
-        // let x = this.position.x;
-        // let y = this.position.y + 5;
-        // this.ctx.fillText(quiz.question, x, y, this.width - 10);
-
         let lines = this.breakLine(quiz.question, this.width * 2 / 3);
         for(let i = 0; i < lines.length; i++){
             this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 5 + i * 15);
@@ -509,8 +506,16 @@ class Quiz{
     drawChoices(){
 
         for(let i = 0; i < 4; ++i){
-            // 矩形の色を設定
-            this.ctx.fillStyle = '#32cd32';
+
+            // 色を設定する
+            if(this.isPressed[i]){
+                // 押された時
+                this.ctx.fillStyle = '#808080';
+            } else {
+                //押されていない時
+                this.ctx.fillStyle = '#32cd32';
+            }
+            
             // 枠線の色を設定する
             this.ctx.strokeStyle = '#ffffff';
             // 枠線の太さ

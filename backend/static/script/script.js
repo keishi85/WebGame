@@ -438,6 +438,14 @@
             let position = quizInstance.choicesPosition[i];
             if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
                 console.log(i);
+                
+                // 押された時にキーの色を変える
+                quizInstance.isPressed[i] = true;
+                // 一定時間後に isPressed を false に設定する
+                setTimeout(() => {
+                    quizInstance.isPressed[i] = false;
+                }, 100); // 100ミリ秒後に isPressed を false に設定する
+
                 // 正解時はスコア加算
                 let judgement = quizInstance.checkAnswer(i);
                 if(judgement !== 0){
