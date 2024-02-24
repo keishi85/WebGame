@@ -109,13 +109,6 @@ def count_user():
     data = request.get_json()
     name = data.get('userName')
 
-    # 名前で検索して該当するものがあれば得点を上書き、なければ新規に挿入
-    # mongo.db.scores.update_one(
-    #     {'name': name},
-    #     {'$set': {'score': 0}},
-    #     upsert=True
-    # )
-
     # 全ユーザーが揃ったかどうかをチェック
     check_start_condition()
     return jsonify({'message': 'User count updated'})
@@ -139,6 +132,11 @@ def check_start_condition():
         global game_started
         game_started = True
         user_count = 0  # カウンターをリセット
+
+# ゲームが終了したタイミングで遷移
+@app.route('/game_end')
+def game_end():
+    return render_template('gameEnd.html')
 
 # スーパーユーザーでアクセス
 @app.route('/superuser')

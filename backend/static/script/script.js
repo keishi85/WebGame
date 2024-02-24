@@ -137,6 +137,11 @@
      * @type {HTMLImageElement}
      */
     let treeImg = null;
+    /**
+     * ゲーム時間を設定
+     * @type {number}
+     */
+    let GAMETIME = 10; // 3分
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -182,10 +187,6 @@
 
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
-        // console.log(calcData);
-        // console.log(quizData);
-
-        
 
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
@@ -199,6 +200,21 @@
         // クイズインスタンスの初期化
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
         quizInstance.loadImage();
+
+        // ゲーム時間の計測を開始
+        const timerInterval = setInterval(() => {
+            // 残り時間を更新し、残り時間を描画
+            drawTimer();
+
+            // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
+            if (GAMETIME === 0) {
+                clearInterval(timerInterval);
+                endGame();
+            } else {
+                // 残り時間を1減らす
+                GAMETIME -= 1;
+            }
+        }, 1000); // 1秒ごとに更新
     }
 
     /**
@@ -213,6 +229,8 @@
         ctx.globalAlpha = 1.0;
         // 数字キーのエリアの描画
         util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32');
+        // 計測時間を描画
+        drawTimer();
         // 計算問題ブロックの更新
         blockArray.map((v) => {
             v.update();
@@ -629,6 +647,33 @@
             playerName = state.name;
             score = state.score;
         }
+    }
+    function endGame() {
+        // ゲーム終了のアラートを表示
+        alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
+    
+        // 10秒後に画面遷移を行う
+        setTimeout(() => {
+            window.location.href = '/game_end';
+        }, 10000); // 10000ミリ秒 = 10秒
+    }
+    
+    // タイマーを描画する関数
+    function drawTimer() {
+        // 残り時間を分と秒に変換
+        const minutes = Math.floor(GAMETIME / 60);
+        const seconds = GAMETIME % 60;
+    
+        // 残り時間のテキストを設定
+        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+        // テキストのスタイル設定
+        ctx.fillStyle = '#ff0000'; // テキストの色
+        ctx.font = "bold 30px 'Segoe Print', sans-serif"; // フォントスタイル
+        ctx.textAlign = "center"; // テキストを中央揃え
+    
+        // 残り時間をcanvasに描画
+        ctx.fillText(timeString, (canvas.width * 4) / 5, 50); // テキストを描画
     }
 
 })();
