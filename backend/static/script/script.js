@@ -197,7 +197,8 @@
         initializeNumberKey();
 
         // クイズインスタンスの初期化
-        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData);
+        quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
+        quizInstance.loadImage();
     }
 
     /**
@@ -311,7 +312,7 @@
             numberKeyCoordinateArray[13][3]
         );
         
-        // 1回送る
+        // // 1回送る
         // sendScore(playerName, 0).then(() => {
         //     getScores(playerName);
         // });
@@ -374,15 +375,16 @@
                         if (inputNumber !== null) {
                             // 解答を数値に変換
                             let userAnswer = Number(inputNumber);
+                            // console.log(userAnswer);
 
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
-                                // 正解かどうかの判定を行う「
+                                // 正解かどうかの判定を行う
                                 let judgement = blockArray[i].checkAnswer(userAnswer);
                                 if(judgement !== 0){
                                     // スコアを加算
                                     score += judgement;
-                                    // 回答した数をインクリメンt
+                                    // 回答した数をインクリメント
                                     calcSolvedCount++;
                                     // 正解した場合，DBに反映
                                     // DBから各プレイヤーの名前とスコアを取得
@@ -445,7 +447,15 @@
         for(let i = 0; i < 4; ++i){
             let position = quizInstance.choicesPosition[i];
             if(position.x < x && position.x + quizInstance.choicesWidth > x && position.y < y && position.y + quizInstance.choicesHeight > y){
-                // console.log(i);
+                console.log(i);
+                
+                // 押された時にキーの色を変える
+                quizInstance.isPressed[i] = true;
+                // 一定時間後に isPressed を false に設定する
+                setTimeout(() => {
+                    quizInstance.isPressed[i] = false;
+                }, 100); // 100ミリ秒後に isPressed を false に設定する
+
                 // 正解時はスコア加算
                 let judgement = quizInstance.checkAnswer(i);
                 if(judgement !== 0){
@@ -468,8 +478,8 @@
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
         ctx.lineWidth = 1;
-        ctx.fillText(`${inputNumber}`,200, 390); 
-        ctx.strokeText(`${inputNumber}`,200, 390); 
+        ctx.fillText(`A:${inputNumber}`,100, 390); 
+        ctx.strokeText(`A:${inputNumber}`,100, 390); 
     }
 
     /**
@@ -527,11 +537,11 @@
         .then(response => response.json())
         // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
-            // console.log('Success:スコアを送ることに成功');
+            //console.log('Success:', data);
             return data; // ここでPromiseを解決
         })
         .catch((error) => {
-            console.error('Error:', error);
+            //console.error('Error:', error);
         });
     }
     /**
@@ -612,7 +622,7 @@
         const state = { name: name, score: score };
         localStorage.setItem('gameState', JSON.stringify(state));
     }
-    // ゲームがリロードされた際に呼び出される関数
+
     function loadGameState() {
         const state = JSON.parse(localStorage.getItem('gameState'));
         if (state) {
@@ -620,4 +630,5 @@
             score = state.score;
         }
     }
+
 })();

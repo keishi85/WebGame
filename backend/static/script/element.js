@@ -361,18 +361,19 @@ class NumberKey{
         this.ctx.beginPath();
         // 楕円のパスを設定する
         this.ctx.ellipse(this.position.x, this.position.y, this.radiusX, this.radiusY, this.rotation, 0, 2 * Math.PI);
-        
-        // 押された時
+
+        // 色を設定する
         if(this.isPressed){
+            // 押された時
             this.ctx.fillStyle = '#808080';
         } else {
-            //楕円の色を設定する
+            //押されていない時
             this.ctx.fillStyle = this.color;
         }
 
         // 枠線の色を設定する
         this.ctx.strokeStyle = '#ffffff';
-
+        // 枠線の太さ
         this.ctx.lineWidth = 2;
         
         // パスを閉じることを明示する
@@ -383,7 +384,7 @@ class NumberKey{
 
         // 数字のフォントを設定
         this.ctx.fillStyle = this.fontColor;
-        this.ctx.font = this.font;
+        this.ctx.font = "bold 15px 'Segoe Print', san-serif";
         this.ctx.textAlign = "center";
         // テキストを表示
         this.ctx.fillText(
@@ -410,7 +411,7 @@ class Quiz{
      * @param {Array<{ question: string, choices: string[], answer: string }>} quizData - クイズの配列
      * @param {string} color - ブロックの色 
      */
-    constructor(ctx, x, y, width, height, life, area, quizData, color = '#0000ff'){
+    constructor(ctx, x, y, width, height, life, area, quizData, imgPath, color = '#0000ff'){
         this.ctx = ctx;
         this.initialPosition = new Position(x, y); // 初期位置を記憶する
         this.position = new Position(x, y);
@@ -422,7 +423,10 @@ class Quiz{
         this.speed = 0.2;
         this.quizData = quizData;
         this.quizIndex = 0;
+        this.imgPath = imgPath;
         this.setChoicesPosition();
+        this.isPressed = [false, false, false, false];
+        this.correctOrIncorrect = [null, null, null, null];
     }
      /**
      * ブロックを描画する
@@ -430,20 +434,26 @@ class Quiz{
      draw(){      
         // 円の色を設定する
         this.ctx.fillStyle = this.color;
-        // 矩形を描画
-        this.ctx.fillRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+        // 落ち葉を描画
+        this.ctx.drawImage(this.img,
+            this.position.x - this.width / 2,
+            this.position.y - this.height / 2,
+            this.width,
+            this.height
+            );
          
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
-        this.ctx.font = '20px Arial';
+        this.ctx.font = "bold 15px 'Segoe Print', san-serif";
         this.ctx.textAlign = "center";
 
         let quiz = this.quizData[this.quizIndex];
         
         // 問題文を表示
-        let x = this.position.x;
-        let y = this.position.y + 5;
-        this.ctx.fillText(quiz.question, x, y, this.width - 10);      
+        let lines = this.breakLine(quiz.question, this.width * 2 / 3);
+        for(let i = 0; i < lines.length; i++){
+            this.ctx.fillText(lines[i], this.position.x, this.position.y - this.height / 5 + i * 15);
+        }
     }
 
     /**
@@ -496,18 +506,37 @@ class Quiz{
     drawChoices(){
 
         for(let i = 0; i < 4; ++i){
-            // 矩形を描画
-            this.ctx.fillStyle = '#ffffff';
+            // 色を設定する
+            if(this.isPressed[i]){
+                // 押された時
+                this.ctx.fillStyle = '#808080';
+            } else {
+                //押されていない時
+                this.ctx.fillStyle = '#32cd32';
+            }
             
+            // 枠線の色を設定する
+            this.ctx.strokeStyle = '#ffffff';
+            // 枠線の太さ
+            this.ctx.lineWidth = 2;
+            // 矩形を描画
             this.ctx.fillRect(this.choicesPosition[i].x, this.choicesPosition[i].y, this.choicesWidth, this.choicesHeight);
+            this.ctx.strokeRect(this.choicesPosition[i].x, this.choicesPosition[i].y, this.choicesWidth, this.choicesHeight);
             
             // 選択肢を描画
             this.ctx.fillStyle = '#000000'
-            this.ctx.font = '15px Arial';
+            this.ctx.font = "bold 15px 'Segoe Print', san-serif";
             this.ctx.textAlign = "center";
             let x = this.choicesPosition[i].x + this.choicesWidth / 2;
             let y = this.choicesPosition[i].y + this.choicesHeight / 2;
             this.ctx.fillText(this.quizData[this.quizIndex].choices[i], x ,y);
+
+            // まるばつを描画
+            if(this.correctOrIncorrect[i] === true){
+                this.drawCircle(i);
+            } else if(this.correctOrIncorrect[i] === false){
+                this.drawCross(i);
+            }
         }
     }
 
@@ -524,23 +553,138 @@ class Quiz{
 
         if(quiz.choices[userAnswer] === quiz.answer){
 
+            // trueのセット
+            this.correctOrIncorrect[userAnswer] = true;
+
             // スコア計算(仮に1000点)
             let addScore = 1000;
 
-            console.log('OK');
-            
-            //ライフを0に
-            this.life = 0;
-            // 次の問題にインデックスを移動
-            this.quizIndex += 1
-            // 初期位置に移動
-            this.position.set(this.initialPosition.x, this.initialPosition.y);
+            // 1秒後にリセット
+            setTimeout(() => {
+                //ライフを0に
+                this.life = 0;
+                // 次の問題にインデックスを移動
+                this.quizIndex += 1
+                // 初期位置に移動
+                this.position.set(this.initialPosition.x, this.initialPosition.y);
+                // nullに戻す
+                this.correctOrIncorrect[userAnswer] = null;
+            }, 1000);
 
-            return  addScore;
+            return addScore;
+
+            // console.log('OK');
+            
+            // //ライフを0に
+            // this.life = 0;
+            // // 次の問題にインデックスを移動
+            // this.quizIndex += 1
+            // // 初期位置に移動
+            // this.position.set(this.initialPosition.x, this.initialPosition.y);
+
+            // return  addScore;
         } else {
-            console.log('not OK');
+            // falseにセット
+            this.correctOrIncorrect[userAnswer] = false;
+            // 1秒後にリセット
+            setTimeout(() => {
+                //ライフを0に
+                this.life = 0;
+                // 次の問題にインデックスを移動
+                this.quizIndex += 1
+                // 初期位置に移動
+                this.position.set(this.initialPosition.x, this.initialPosition.y);
+                // nullに戻す
+                this.correctOrIncorrect[userAnswer] = null;
+            }, 1000);
             return 0;
+
+            // console.log('not OK');
+            // return 0;
         }
+    }
+
+    /**
+     * 文字列を分割し，自動的に改行する
+     * @param {string} text 
+     * @param {number} maxWidth 
+     * @returns 
+     */
+    breakLine(text, maxWidth){
+        let words = text.split('');
+        let lines = [];
+        let currentLine = words[0];
+
+        for(let i = 1; i < words.length; i++){
+            let word = words[i];
+            let width = this.ctx.measureText(currentLine + ' ' + word).width;
+            if(width < maxWidth){
+                currentLine += ' ' + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
+
+    // 画像の読み込みが完了したときに呼ばれるコールバック関数
+    onImageLoad(){
+        this.imageLoaded = true;
+    }
+
+    // 画像の読み込みが失敗したときに呼ばれるコールバック関数
+    onImageError(){
+        console.error("Failed to load image:", this.imageUrl);
+    }
+
+    // 画像の読み込み
+    loadImage(){
+        this.img = new Image();
+        this.img.onload = this.onImageLoad.bind(this);
+        this.img.onerror = this.onImageError.bind(this);
+        this.img.src = this.imgPath;
+    }
+
+    drawCircle(choice) {
+        // 円を描画
+        this.ctx.beginPath();
+        this.ctx.arc(
+            this.choicesPosition[choice].x + this.choicesWidth / 2,
+            this.choicesPosition[choice].y + this.choicesHeight / 2,
+            this.choicesHeight / 2, 
+            0, 
+            Math.PI * 2
+            );
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+        this.ctx.closePath();
+    
+        // // 1秒後に描画を消す
+        // setTimeout(() => {
+        //     clearCanvas();
+        // }, 1000);
+    }
+
+    drawCross(choice) {
+        // バツを描画
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.choicesPosition[choice].x, this.choicesPosition[choice].y);
+        this.ctx.lineTo(this.choicesPosition[choice].x + this.choicesWidth, this.choicesPosition[choice].y + this.choicesHeight);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+        this.ctx.moveTo(this.choicesPosition[choice].x, this.choicesPosition[choice].y + this.choicesHeight);
+        this.ctx.lineTo(this.choicesPosition[choice].x + this.choicesWidth, this.choicesPosition[choice].y);
+        this.ctx.stroke();
+        this.ctx.closePath();
+    
+        // // 1秒後に描画を消す
+        // setTimeout(() => {
+        //     clearCanvas();
+        // }, 1000);
     }
 
 }
