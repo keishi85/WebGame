@@ -5,6 +5,7 @@
         <meta charset="UTF-8">
         <!-- スタイルシートの読み込み -->
         <link rel="stylesheet" href="../static/css/style.css">
+
         <!-- JavaScript ファイルの読み込み -->
         <script src="../static/script/canvas2d.js"></script>
         <script src="../static/script/element.js"></script> 
@@ -14,6 +15,7 @@
         <div class="title-container">
             <h1 class="mochiy-pop-one-regular">計算ゲーム</h1>
         </div>
+        <audio id="countdownSound" src="../static/audio/Countdown.mp3"></audio>
         <!-- ID 属性を持つ canvas エレメント -->
         <canvas id="main_canvas"></canvas>
         <div id="questions-container" data-questions='{{ questions | tojson | safe }}'></div>

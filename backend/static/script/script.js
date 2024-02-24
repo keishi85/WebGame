@@ -206,6 +206,12 @@
             // 残り時間を更新し、残り時間を描画
             drawTimer();
 
+            // 残り時間が5秒になったら音を鳴らす
+            if (GAMETIME === 6) {
+                const countdownSound = document.getElementById('countdownSound');
+                countdownSound.play();
+            }
+
             // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
             if (GAMETIME === 0) {
                 clearInterval(timerInterval);
