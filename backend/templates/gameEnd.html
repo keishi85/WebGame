@@ -5,13 +5,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../static/css/start.css">
-    <!-- Socket.IOクライアントライブラリの読み込み -->
-    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <link rel="stylesheet" href="../static/css/gameEnd.css">
 </head>
 <body>
-    <div class="game-start-container">
-        <h1>Game Results</h1>
+    <h1>Game Results</h1>
+    <div class="game-result-container">
         <table>
             <thead>
                 <tr>
@@ -25,7 +23,7 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ score.name }}</td>
-                        <td>{{ score.score }}</td>
+                        <td>{{ score.score|round(1) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
