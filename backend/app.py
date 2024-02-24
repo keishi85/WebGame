@@ -136,7 +136,9 @@ def check_start_condition():
 # ゲームが終了したタイミングで遷移
 @app.route('/game_end')
 def game_end():
-    return render_template('gameEnd.html')
+    # スコアが高い順にソートして全プレイヤーを取得
+    all_scores = mongo.db.scores.find().sort('score', -1)
+    return render_template('gameEnd.html', scores=all_scores)
 
 # スーパーユーザーでアクセス
 @app.route('/superuser')
