@@ -141,8 +141,12 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 10; // 3分
-
+    let GAMETIME = 100; // 3分
+    /**
+     * サウンドを設定
+     */
+    let correctAnswer = null;
+    let wrongAnswer = null;
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -201,6 +205,10 @@
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
         quizInstance.loadImage();
 
+        // サウンドの初期化
+        correctAnswer = document.getElementById('correctAnswerSound');
+        wrongAnswer = document.getElementById('wrongAnswerSound');
+        
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
             // 残り時間を更新し、残り時間を描画
@@ -410,12 +418,13 @@
                                     score += judgement;
                                     // 回答した数をインクリメント
                                     calcSolvedCount++;
-                                    // 正解した場合，DBに反映
-                                    // DBから各プレイヤーの名前とスコアを取得
-                                    // sendScore(playerName, score).then(() => {
-                                    //     getScores(playerName);
-                                    // });
+                                    // 正解音を鳴らす
+                                    correctAnswer.play();
                                     break;
+                                }
+                                else{
+                                    // 不正解音を鳴らす
+                                    wrongAnswer.play();
                                 }
                             }
 
