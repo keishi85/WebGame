@@ -346,11 +346,6 @@
             numberKeyCoordinateArray[13][2],
             numberKeyCoordinateArray[13][3]
         );
-        
-        // // 1回送る
-        // sendScore(playerName, 0).then(() => {
-        //     getScores(playerName);
-        // });
     }
 
     /**
@@ -364,12 +359,12 @@
             x = event.pageX - canvas.offsetLeft;
             y = event.pageY - canvas.offsetTop;
         }
-        else if(event.type === 'touchstart'){
-            // タッチの時
-            let touch = event.touches[0];
-            x = touch.pageX - canvas.offsetLeft;
-            y = touch.pageY - canvas.offsetTop;
-        }
+        // else if(event.type === 'touchstart'){
+        //     // タッチの時
+        //     let touch = event.touches[0];
+        //     x = touch.pageX - canvas.offsetLeft;
+        //     y = touch.pageY - canvas.offsetTop;
+        // }
 
        
     
@@ -501,6 +496,11 @@
                 let judgement = quizInstance.checkAnswer(i);
                 if(judgement !== 0){
                     score += judgement;
+                    // 正解音を鳴らす
+                    correctAnswer.play();
+                } else {
+                    // 不正解音を鳴らす
+                    wrongAnswer.play();
                 }
                 break;
             }
