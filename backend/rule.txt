@@ -1,0 +1,20 @@
+1. 計算問題とクイズを正解して得点を稼ぐゲームです
+2. 得点は回答するまでの速度と問題のレベル(果物の種類)によって変わります
+   桃　　 : 100 point
+   りんご : 50 point
+   みかん : 30 point
+   レモン : 10 point
+3. 5問計算問題を回答するとクイズが出題されるようになっています
+4. 計算問題は下部の数値ボタンから答えを入力し，"Enter"を押してください
+   (回答の際に問題を選択する必要はなく，入力内容が画面上の問題のいづれかの答えになっていれば正解となります)
+
+English ver.
+1. This is a game where you earn points by correctly answering calculation problems and quizzes.
+2. Scores vary depending on the speed of answering and the level of the question (type of fruit)
+    Peach: 100 points
+    Apple: 50 points
+    Mikan: 30 points
+    Lemon: 10 points
+3. A quiz will be asked after you answer the 5 calculation questions.
+4. For calculation questions, enter the answer using the numerical buttons at the bottom and press "Enter"
+    (There is no need to select a question when answering; the answer is correct if the input content corresponds to one of the questions on the screen.)
