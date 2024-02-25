@@ -158,5 +158,3 @@ tbody tr td:first-child::before {
 #playButton:active {
     transform: translateY(1px); /* Push down effect when clicked */
 }
-
-

@@ -98,11 +98,12 @@ def check_game_start():
 # ゲームが終了したタイミングで遷移
 @app.route('/game_end')
 def game_end():
+    # ゲームをスタートしないように設定
+    global game_started
+    game_started = False
+    
     # スコアが高い順にソートして全プレイヤーを取得
     all_scores = mongo.db.scores.find().sort('score', -1)
-
-    # ゲーム終了画面を表示した後にスコアコレクションの内容をリセット
-    mongo.db.scores.delete_many({})
     return render_template('gameEnd.html', scores=all_scores)
 
 # スーパーユーザーでアクセス
@@ -117,6 +118,11 @@ def signal_game_start():
     game_started = True
     return jsonify({'message': 'Game start signaled'})
 
+# スーパーユーザーから全てのスコアを削除するエンドポイント
+@app.route('/delete_all_scores', methods=['POST'])
+def delete_all_scores():
+    mongo.db.scores.delete_many({})
+    return jsonify({'message': 'All scores have been successfully deleted.'})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)

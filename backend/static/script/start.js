@@ -73,10 +73,8 @@
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
             } else {
-                // // 名前をローカルストレージに保存
+                // 名前をローカルストレージに保存
                 localStorage.setItem('playerName', name);
-
-                // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
 
                 try {
                     await submitUser(); // 参加人数をサーバーに送信
