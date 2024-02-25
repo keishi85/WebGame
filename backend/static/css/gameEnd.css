@@ -30,7 +30,7 @@ html, body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center; /* 子要素を中央揃えにする */
     margin-bottom: 15px; /* 下部に隙間を追加 */
-    margin-top: 45px;
+    margin-top: 10px;
      /* 枠線のスタイル設定 */
     border: 2px solid #FF4500; /* 枠線の色と太さ a*/
     overflow-y: auto; /* スクロール可能にする */
@@ -145,6 +145,7 @@ tbody tr td:first-child::before {
     border-radius: 5px; /* Rounded corners */
     cursor: pointer; /* Change cursor to pointer on hover */
     margin-top: 7px; /* Add some space above the button */
+    margin-bottom: 5px; /* Reduce space below the button if needed */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
     transition: background-color 0.3s, transform 0.2s; /* Smooth transition for interactions */
 }

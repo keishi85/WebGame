@@ -100,6 +100,9 @@ def check_game_start():
 def game_end():
     # スコアが高い順にソートして全プレイヤーを取得
     all_scores = mongo.db.scores.find().sort('score', -1)
+
+    # ゲーム終了画面を表示した後にスコアコレクションの内容をリセット
+    mongo.db.scores.delete_many({})
     return render_template('gameEnd.html', scores=all_scores)
 
 # スーパーユーザーでアクセス

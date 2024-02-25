@@ -226,6 +226,7 @@
 
             // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
             if (GAMETIME === 0) {
+                localStorage.clear();
                 clearInterval(timerInterval);
                 endGame();
             } else {
