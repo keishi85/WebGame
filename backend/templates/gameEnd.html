@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="../static/css/gameEnd.css">
 </head>
 <body>
+    <audio id="endSound" src="../static/audio/endBGM.mp3"></audio>
     <h1>Game Results</h1>
+    <button id="playButton">音楽を再生(Play music)</button>
     <div class="game-result-container">
         <table>
             <thead>
@@ -30,6 +32,23 @@
         </table>
     
     </div>
-    <!-- <script src="../static/script/superUser.js"></script> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const playButton = document.getElementById('playButton');
+            const bgm = document.getElementById('endSound');
+            playButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (bgm.paused) {
+                    bgm.play()
+                        .then(() => console.log("オーディオの再生を開始しました。"))
+                        .catch(error => console.error("オーディオの再生に失敗しました。", error));
+                    playButton.textContent = '音楽を停止(Stop music)';
+                } else {
+                    bgm.pause();
+                    playButton.textContent = '音楽を再生(Play music)';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

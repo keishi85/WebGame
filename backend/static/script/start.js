@@ -50,6 +50,8 @@
 
         const playButton = document.getElementById('playButton');
         const bgm = document.getElementById('startSound');
+        // bgm.loop = true;
+        // bgm.play();
 
         playButton.addEventListener('click', function (event) {
             event.preventDefault();

@@ -135,3 +135,27 @@ tbody tr td:first-child::before {
     height: 40px; /* 画像の高さを調整 */
 }
 
+/* Button Styling */
+#playButton {
+    padding: 10px 20px; /* Adjust padding to make the button larger */
+    font-size: 1.2em; /* Increase font size for better visibility */
+    background-color: #f88c61; /* Use a lighter orange color for the button */
+    color: white; /* Text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    margin-top: 7px; /* Add some space above the button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for interactions */
+}
+
+#playButton:hover {
+    background-color: #FF4500; /* Darker orange on hover */
+    transform: translateY(-2px); /* Slight move up effect on hover */
+}
+
+#playButton:active {
+    transform: translateY(1px); /* Push down effect when clicked */
+}
+
+

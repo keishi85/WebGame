@@ -147,6 +147,7 @@
      */
     let correctAnswer = null;
     let wrongAnswer = null;
+    let gameBGM = null;
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -208,6 +209,9 @@
         // サウンドの初期化
         correctAnswer = document.getElementById('correctAnswerSound');
         wrongAnswer = document.getElementById('wrongAnswerSound');
+        gameBGM = document.getElementById('gameSound');
+        gameBGM.loop = true;
+        gameBGM.play();
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
