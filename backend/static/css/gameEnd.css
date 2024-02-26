@@ -1,0 +1,161 @@
+@charset "utf-8";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    display: flex;
+    flex-direction: column; /* 子要素を縦並びにする */
+    justify-content: center; /* 子要素を中央に配置 */
+    align-items: center; /* 子要素を中央揃えにする */
+    height: 100vh; /* viewport heightを使用して、bodyの高さをビューポートの高さに合わせます。 */
+    margin: 0;
+    padding: 0;
+    background-color: #efa051;
+    color: #FF4500;
+    font-family: 'Mochiy Pop One', sans-serif;
+    
+}
+
+.game-result-container {
+    width:100%; /* コンテナの幅を画面の70%に設定 */
+    height: 80%; /* コンテナの高さを画面の80%に設定*/
+    margin: 0 auto; /* 左右のマージンを自動で調整して中央揃え */
+    background-color: #FFDAB9;
+    padding: 0px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center; /* 子要素を中央揃えにする */
+    margin-bottom: 15px; /* 下部に隙間を追加 */
+    margin-top: 45px;
+     /* 枠線のスタイル設定 */
+    border: 2px solid #FF4500; /* 枠線の色と太さ a*/
+    overflow-y: auto; /* スクロール可能にする */
+}
+
+table {
+    text-align: center;
+}
+
+table th {
+    padding: 20px 40px;
+    font-size: 2em;
+    border-bottom: 2px dashed #FF4500; 
+}
+
+table td {
+    padding: 10px 40px;
+    font-size: 1.5em;
+}
+
+
+
+h1 {
+    font-size: 3em; /* 例: 2emは基本サイズの2倍 */
+    padding-bottom: 0px;
+}
+
+/* フォントの指定 */
+.mochiy-pop-one-regular {
+    font-family: "Mochiy Pop One", sans-serif;
+    font-weight: 450;
+    font-style: normal;
+}
+
+
+/* メディアクエリを使用して、ウィンドウの幅がある程度以下になると、h1要素のフォントサイズを調整する */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2em; /* 例: 1.5emは基本サイズの1.5倍 */
+    }
+}
+
+/* 金、銀、銅の王冠のスタイル */
+.gold {
+    background-image: url('/static/images/gold.png'); /* 金の王冠の画像のURLを設定 */
+    width: 40px; /* 画像の幅を調整 */
+    height: auto; /* 画像の高さを自動に設定 */
+}
+
+.silver {
+    background-image: url('/static/images/silver.png'); /* 銀の王冠の画像のURLを設定 */
+    width: 40px; /* 画像の幅を調整 */
+    height: auto; /* 画像の高さを自動に設定 */
+}
+
+.bronze {
+    background-image: url('/static/images/bronze.png'); /* 銅の王冠の画像のURLを設定 */
+    width: 40px; /* 画像の幅を調整 */
+    height: auto; /* 画像の高さを自動に設定 */
+}
+
+/* ランクが一位、二位、三位の場合に王冠を表示 */
+tbody tr:nth-child(1) td:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 40px; /* 画像の幅を調整 */
+    height: 40px; /* 画像の高さを自動に設定 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/static/images/gold.png'); /* 金の王冠の画像のURLを設定 */
+    vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+}
+
+tbody tr:nth-child(2) td:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 40px; /* 画像の幅を調整 */
+    height: 40px; /* 画像の高さを自動に設定 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/static/images/silver.png'); /* 銀の王冠の画像のURLを設定 */
+}
+
+tbody tr:nth-child(3) td:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 40px; /* 画像の幅を調整 */
+    height: 40px; /* 画像の高さを自動に設定 */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url('/static/images/bronze.png'); /* 銅の王冠の画像のURLを設定 */
+}
+
+/* ランクが一位、二位、三位以外の場合には空の要素を表示 */
+tbody tr td:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 40px; /* 画像の幅を調整 */
+    height: 40px; /* 画像の高さを調整 */
+}
+
+/* Button Styling */
+#playButton {
+    padding: 10px 20px; /* Adjust padding to make the button larger */
+    font-size: 1.2em; /* Increase font size for better visibility */
+    background-color: #f88c61; /* Use a lighter orange color for the button */
+    color: white; /* Text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    margin-top: 7px; /* Add some space above the button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for interactions */
+}
+
+#playButton:hover {
+    background-color: #FF4500; /* Darker orange on hover */
+    transform: translateY(-2px); /* Slight move up effect on hover */
+}
+
+#playButton:active {
+    transform: translateY(1px); /* Push down effect when clicked */
+}
+
+

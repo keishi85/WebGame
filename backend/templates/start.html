@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../static/css/start.css">
     <!-- Socket.IOクライアントライブラリの読み込み -->
     <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <audio id="startSound" src="../static/audio/startBGM.mp3"></audio>
 </head>
 <body>
     <div class="game-start-container">
@@ -18,11 +19,8 @@
         <form id="nameForm">
             <label for="name">名前:</label>
             <input type="text" id="name" name="name" placeholder="あなたの名前">
-            <!-- <form id="userCountForm">
-                <label for="userCount">ユーザー数:</label>
-                <input type="number" id="userCount" name="userCount" required>
-            </form>         -->
             <button type="button" id="startGame" class="mochiy-pop-one-regular">ゲームスタート</button>
+            <button id="playButton">音楽を再生(Play music)</button>
         </form>
     </div>
     

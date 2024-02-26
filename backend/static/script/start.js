@@ -47,7 +47,25 @@
         //     // ゲームのページに遷移
         //     window.location.href = '/game';
         // }
-    
+
+        const playButton = document.getElementById('playButton');
+        const bgm = document.getElementById('startSound');
+        // bgm.loop = true;
+        // bgm.play();
+
+        playButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            if (bgm.paused) {
+                bgm.play()
+                    .then(() => console.log("オーディオの再生を開始しました。"))
+                    .catch(error => console.error("オーディオの再生に失敗しました。", error));
+                playButton.textContent = '音楽を停止(Stop music)';
+            } else {
+                bgm.pause();
+                playButton.textContent = '音楽を再生(Play music)';
+            }
+        });
+        
         startGameButton.addEventListener('click', async () => {
             name = nameInput.value.trim(); // 名前入力の前後の空白を削除
     
@@ -70,11 +88,6 @@
                     // ゲーム開始の合図をポーリングで確認する関数を呼び出す
                     pollForGameStart();
 
-                    // サーバーからのゲーム開始の合図を受信したらゲームページに遷移
-                    // socket.on('game_start', (data) => {
-                    //     console.log(data.message);  // サーバーからのメッセージを表示
-                    //     window.location.href = `/game?name=${encodeURIComponent(name)}`; // ゲームページに遷移
-                    // });
                 } catch (error) {
                     console.error('An error occurred:', error);
                     alert('Failed to start the game. Please try again later.');

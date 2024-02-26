@@ -147,6 +147,7 @@
      */
     let correctAnswer = null;
     let wrongAnswer = null;
+    let gameBGM = null;
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -208,6 +209,9 @@
         // サウンドの初期化
         correctAnswer = document.getElementById('correctAnswerSound');
         wrongAnswer = document.getElementById('wrongAnswerSound');
+        gameBGM = document.getElementById('gameSound');
+        gameBGM.loop = true;
+        gameBGM.play();
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
@@ -238,13 +242,25 @@
         // 描画前に画面全体を塗りつぶす
         util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
         // 画像をCanvasの背景に描画
-        //ctx.globalAlpha = 0.5;
         ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
-        ctx.globalAlpha = 1.0;
-        // 数字キーのエリアの描画
-        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32');
+
+        // スコアの更新
+        sendScore(playerName, score).then(() => {
+            getScores(playerName);
+        });
+
+        // プレイヤーの人数を取得
+        getUserCount();
+
+        // ユーザーの人数を描画
+        drawUserNumber();
+
+        // 各プレイヤーの名前，順位，スコアを描画
+        drawPlayerNameAndScore();
+
         // 計測時間を描画
         drawTimer();
+
         // 計算問題ブロックの更新
         blockArray.map((v) => {
             v.update();
@@ -252,6 +268,9 @@
                 v.resetLife();
             }
         });
+
+        // 数字キーのエリアの描画
+        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
 
         // 計算問題から，クイズへの切り替え
         if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
@@ -280,22 +299,10 @@
             drawInputNumber();
         }      
 
-        // スコアの更新
-        sendScore(playerName, score).then(() => {
-            getScores(playerName);
-        });
-
+        
         // 復帰できるようにローカルに保存
         updateGameState(playerName, score);
-       
-        // プレイヤーの人数を取得
-        getUserCount();
-
-        // ユーザーの人数を描画
-        drawUserNumber();
-
-        // 各プレイヤーの名前，順位，スコアを描画
-        drawPlayerNameAndScore();
+        
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
     }
@@ -343,11 +350,6 @@
             numberKeyCoordinateArray[13][2],
             numberKeyCoordinateArray[13][3]
         );
-        
-        // // 1回送る
-        // sendScore(playerName, 0).then(() => {
-        //     getScores(playerName);
-        // });
     }
 
     /**
@@ -361,12 +363,12 @@
             x = event.pageX - canvas.offsetLeft;
             y = event.pageY - canvas.offsetTop;
         }
-        else if(event.type === 'touchstart'){
-            // タッチの時
-            let touch = event.touches[0];
-            x = touch.pageX - canvas.offsetLeft;
-            y = touch.pageY - canvas.offsetTop;
-        }
+        // else if(event.type === 'touchstart'){
+        //     // タッチの時
+        //     let touch = event.touches[0];
+        //     x = touch.pageX - canvas.offsetLeft;
+        //     y = touch.pageY - canvas.offsetTop;
+        // }
 
        
     
@@ -409,6 +411,8 @@
                             let userAnswer = Number(inputNumber);
                             // console.log(userAnswer);
 
+                            let correct = false; // 正解したかどうかの判定(音を鳴らす判定に使用)
+
                             // 画面に表示されているブロックの解答をチェックする
                             for(let i = 0; i < blockArray.length; ++i){
                                 // 正解かどうかの判定を行う
@@ -418,14 +422,17 @@
                                     score += judgement;
                                     // 回答した数をインクリメント
                                     calcSolvedCount++;
-                                    // 正解音を鳴らす
-                                    correctAnswer.play();
+                                    // 正解時はcorrectをtrueに
+                                    correct = true;
                                     break;
                                 }
-                                else{
-                                    // 不正解音を鳴らす
-                                    wrongAnswer.play();
-                                }
+                            }
+                            if(correct){
+                                // 正解音を鳴らす
+                                correctAnswer.play();
+                            } else {
+                                // 不正解音を鳴らす
+                                wrongAnswer.play();
                             }
 
                             // 解答の入力をnullに戻す
@@ -493,6 +500,11 @@
                 let judgement = quizInstance.checkAnswer(i);
                 if(judgement !== 0){
                     score += judgement;
+                    // 正解音を鳴らす
+                    correctAnswer.play();
+                } else {
+                    // 不正解音を鳴らす
+                    wrongAnswer.play();
                 }
                 break;
             }
@@ -688,7 +700,7 @@
         ctx.textAlign = "center"; // テキストを中央揃え
     
         // 残り時間をcanvasに描画
-        ctx.fillText(timeString, (canvas.width * 4) / 5, 50); // テキストを描画
+        ctx.fillText(timeString, (canvas.width * 5) / 6, 30); // テキストを描画
     }
 
 })();
