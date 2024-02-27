@@ -179,8 +179,10 @@
      */
     let hinderingPlayerName = null;
 
-    /* * ページのロードが完了したときに発火する load イベント
-     */
+
+    /* 
+    * ページのロードが完了したときに発火する load イベント
+    */
     window.addEventListener('load', () => {
         // ユーティリティクラスを初期化
         util = new Canvas2DUtility(document.body.querySelector('#main_canvas'));
@@ -271,9 +273,9 @@
 
             // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
             if (GAMETIME === 0) {
-                localStorage.clear();
                 clearInterval(timerInterval);
                 gameActive = false;
+                localStorage.clear();
                 endGame();
             } else {
                 // 残り時間を1減らす
@@ -325,10 +327,9 @@
                     v.resetLife();
                 }
             });
-        }
 
-        // 数字キーのエリアの描画
-        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
+            // 数字キーのエリアの描画
+            util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
 
             // 計算問題から，クイズへの切り替え
             if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
@@ -363,10 +364,12 @@
                     v.update();
                 })
             }
-
         
-        // 復帰できるようにローカルに保存
-        updateGameState(playerName, score, GAMETIME);
+            // 復帰できるようにローカルに保存
+            updateGameState(playerName, score, GAMETIME);
+        } else {
+            drawEndGame();
+        }
         
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
