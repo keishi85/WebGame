@@ -154,6 +154,10 @@
     let wrongAnswer = null;
     let gameBGM = null;
     /**
+     * ゲーム進行中かどうか
+     */
+    let gameActive;
+    /**
      * おじゃまが消されたどうか
     */
     let isObstacle = false;
@@ -204,6 +208,9 @@
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
+        // gameStateをactiveに
+        gameActive = true;
+
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
@@ -235,8 +242,8 @@
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
-            // 残り時間を更新し、残り時間を描画
-            drawTimer();
+            // // 残り時間を更新し、残り時間を描画
+            // drawTimer();
 
             // 残り時間が5秒になったら音を鳴らす
             if (GAMETIME === 6) {
@@ -248,6 +255,7 @@
             if (GAMETIME === 0) {
                 localStorage.clear();
                 clearInterval(timerInterval);
+                gameActive = false;
                 endGame();
             } else {
                 // 残り時間を1減らす
@@ -289,13 +297,16 @@
         // 計測時間を描画
         drawTimer();
 
-        // 計算問題ブロックの更新
-        blockArray.map((v) => {
-            v.update();
-            if(questionType === 'Calculation'){
-                v.resetLife();
-            }
-        });
+        // ゲーム進行中の時
+        if(gameActive){
+            // 計算問題ブロックの更新
+            blockArray.map((v) => {
+                v.update();
+                if(questionType === 'Calculation'){
+                    v.resetLife();
+                }
+            });
+        }
 
         // 数字キーのエリアの描画
         util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
@@ -323,7 +334,7 @@
             numberKeyArray.map((v) => {
                 v.update();
             });
-             // 入力された数字の更新
+            // 入力された数字の更新
             drawInputNumber();
         }      
 
@@ -458,7 +469,6 @@
                             if(correct){
                                 // 正解音を鳴らす
                                 correctAnswer.play();
-                                sendObstacleSignal();
                             } else {
                                 // 不正解音を鳴らす
                                 wrongAnswer.play();
@@ -548,7 +558,7 @@
         if(inputNumber === null){return;}
         // テキストの描画
         ctx.fillStyle = '#ff0000';
-        ctx.strokeStyle = '#000000'
+        ctx.strokeStyle = '#000000';
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
         ctx.lineWidth = 1;
@@ -704,9 +714,10 @@
             score = state.score;
         }
     }
+
     function endGame() {
-        // ゲーム終了のアラートを表示
-        alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
+        // // ゲーム終了のアラートを表示
+        // alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
     
         // 10秒後に画面遷移を行う
         setTimeout(() => {
@@ -730,6 +741,31 @@
     
         // 残り時間をcanvasに描画
         ctx.fillText(timeString, (canvas.width * 5) / 6, 30); // テキストを描画
+    }
+
+    function drawEndGame(){
+        // テキストのスタイル設定
+        ctx.fillStyle = '#ff0000'; // テキストの色
+        ctx.font = "bold 50px 'Segoe Print', sans-serif"; // フォントスタイル
+        ctx.textAlign = "center"; // テキストを中央揃え
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 1;
+    
+        // canvasに描画
+        ctx.fillText('FINISH', canvas.width / 2, canvas.height / 2); // テキストを描画
+        ctx.strokeText('FINISH', canvas.width / 2, canvas.height / 2); // テキストを描画
+
+        // テキストのスタイル設定
+        ctx.font = "bold 25px 'Segoe Print', sans-serif"; // フォントスタイル
+    
+        // canvasに描画
+        ctx.fillText('10秒後にスコア画面に移ります.', canvas.width / 2, canvas.height * 3 / 4, canvas.width - 10); // テキストを描画
+
+        // テキストのスタイル設定
+        ctx.font = "bold 20px 'Segoe Print', sans-serif"; // フォントスタイル
+
+         // canvasに描画
+        ctx.fillText('After 10 seconds, move to the score screen', canvas.width / 2, canvas.height * 3 / 4 + 30, canvas.width- 10); // テキストを描画
     }
 
     // お邪魔系を消した際にサーバーに通知
