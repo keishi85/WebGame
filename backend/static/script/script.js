@@ -141,7 +141,12 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 180; // 3分
+    let GAMETIME =  localStorage.getItem('time'); 
+    if (GAMETIME === null) {
+        GAMETIME = 100; // デフォルト値を設定
+    } else {
+        GAMETIME = parseInt(GAMETIME, 10); // localStorageから取得した値は文字列なので数値に変換
+    }
     /**
      * サウンドを設定
      */
@@ -152,10 +157,6 @@
      * ゲーム進行中かどうか(True,False)
      */
     let gameActive;
-    /**
-     * お邪魔が消されたかどうか
-     */
-    let isObstacle;
     /**
      * お邪魔攻撃を受ける割合
      */
@@ -168,9 +169,17 @@
      * 妨害の雲の数
      */
     let OBSTACLE_MAX_COUNT = 2;
-
     /**
-     * ページのロードが完了したときに発火する load イベント
+     * おじゃまが消されたどうか
+    */
+    let isObstacle = false;
+    /**
+     * おじゃまアイテムを消したユーザー名
+     * @type {string}
+     */
+    let hinderingPlayerName = null;
+
+    /* * ページのロードが完了したときに発火する load イベント
      */
     window.addEventListener('load', () => {
         // ユーティリティクラスを初期化
@@ -217,6 +226,12 @@
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
+        // プレイヤーの人数を取得
+        getUserCount();
+
+        // ユーザーの人数を描画
+        drawUserNumber();
+
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -256,6 +271,7 @@
 
             // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
             if (GAMETIME === 0) {
+                localStorage.clear();
                 clearInterval(timerInterval);
                 gameActive = false;
                 endGame();
@@ -264,6 +280,19 @@
                 GAMETIME -= 1;
             }
         }, 1000); // 1秒ごとに更新
+
+        // おじゃまアイテムを他のユーザが削除したかを受信(Polling request)
+        getObstacle();
+
+        /**
+         * websocketの使用は断念
+         * var socket = io(); // 自動的に現在のページのURLを使用
+
+        // サーバーからおじゃまが消された通知を受け取る
+        socket.on('obstacle-item', function(nameOfHinderingPlayer) {
+            alert(nameOfHinderingPlayer + " was decreased by " + player.decreased + " points.");
+        });
+         */  
     }
 
     /**
@@ -279,12 +308,6 @@
         sendScore(playerName, score).then(() => {
             getScores(playerName);
         });
-
-        // プレイヤーの人数を取得
-        getUserCount();
-
-        // ユーザーの人数を描画
-        drawUserNumber();
 
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
@@ -302,9 +325,10 @@
                     v.resetLife();
                 }
             });
+        }
 
-            // 数字キーのエリアの描画
-            util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
+        // 数字キーのエリアの描画
+        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
 
             // 計算問題から，クイズへの切り替え
             if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
@@ -340,15 +364,9 @@
                 })
             }
 
-            // 復帰できるようにローカルに保存
-            updateGameState(playerName, score);
-
-        } else {
-            // 終了の合図を描画
-            drawEndGame();
-        }
-
         
+        // 復帰できるようにローカルに保存
+        updateGameState(playerName, score, GAMETIME);
         
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -597,7 +615,7 @@
                 // 選択肢を配列にまとめる
                 let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
                 
-                // 問題オブジェクトを作成して配列に追加する
+                // 問題オブジェクトを作成して配列に追加する356.36
                 let questionObject = {
                     question: item.question,
                     choices: choices,
@@ -721,8 +739,8 @@
         ctx.fillText('参加人数：' + userCount, 10, 25);
     }
     // ゲーム状態の更新時にローカルストレージを更新する関数
-    function updateGameState(name, score) {
-        const state = { name: name, score: score };
+    function updateGameState(name, score, time) {
+        const state = { name: name, score: score, time: time};
         localStorage.setItem('gameState', JSON.stringify(state));
     }
 
@@ -785,12 +803,52 @@
 
          // canvasに描画
         ctx.fillText('After 10 seconds, move to the score screen', canvas.width / 2, canvas.height * 3 / 4 + 30, canvas.width- 10); // テキストを描画
-
-
     }
 
-    function sendObstacleSignal(){
-
+    // お邪魔系を消した際にサーバーに通知
+    function sendObstacleSignal() {
+        console.log(playerName);
+        fetch('/obstacle-item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert(data.message); 
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });        
     }
 
+    // ユーザーがおじゃまアイテムを削除したかをサーバーから受信
+    function getObstacle() {
+        setInterval(() => {
+            fetch('/item_removed', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    console.log('User name of hindering:', data.name);
+                    // おじゃまアイテムを消したユーザー名を格納
+                    hinderingPlayerName = data.name;
+                    isObstacle = true;
+                }
+                else {
+                    console.log('No user name of hindering');
+                }
+            })
+            .catch(error => console.error('Polling error:', error));
+        }, 5000); // 5秒ごとにポーリング
+    }
 })();
