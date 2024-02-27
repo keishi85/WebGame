@@ -141,11 +141,11 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = null; 
+    let GAMETIME =  localStorage.getItem('time'); 
     if (GAMETIME === null) {
         GAMETIME = 100; // デフォルト値を設定
     } else {
-        score = parseInt(GAMETIME, 10); // localStorageから取得した値は文字列なので数値に変換
+        GAMETIME = parseInt(GAMETIME, 10); // localStorageから取得した値は文字列なので数値に変換
     }
     /**
      * サウンドを設定
