@@ -25,6 +25,14 @@
                 .catch(error => console.error('Error:', error));
             }
         });
+        document.getElementById('setNotGameStart').addEventListener('click', function() {
+            fetch('/reset_game_start', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error)); 
+        });
     });
 
     async function signalGameStart() {

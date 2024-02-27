@@ -141,7 +141,12 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 100; // 3分
+    let GAMETIME = null; 
+    if (GAMETIME === null) {
+        GAMETIME = 100; // デフォルト値を設定
+    } else {
+        score = parseInt(GAMETIME, 10); // localStorageから取得した値は文字列なので数値に変換
+    }
     /**
      * サウンドを設定
      */
@@ -149,7 +154,16 @@
     let wrongAnswer = null;
     let gameBGM = null;
     /**
-     * ページのロードが完了したときに発火する load イベント
+     * おじゃまが消されたどうか
+    */
+    let isObstacle = false;
+    /**
+     * おじゃまアイテムを消したユーザー名
+     * @type {string}
+     */
+    let hinderingPlayerName = null;
+
+    /* * ページのロードが完了したときに発火する load イベント
      */
     window.addEventListener('load', () => {
         // ユーティリティクラスを初期化
@@ -193,6 +207,12 @@
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
+        // プレイヤーの人数を取得
+        getUserCount();
+
+        // ユーザーの人数を描画
+        drawUserNumber();
+
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -234,6 +254,19 @@
                 GAMETIME -= 1;
             }
         }, 1000); // 1秒ごとに更新
+
+        // おじゃまアイテムを他のユーザが削除したかを受信(Polling request)
+        getObstacle();
+
+        /**
+         * websocketの使用は断念
+         * var socket = io(); // 自動的に現在のページのURLを使用
+
+        // サーバーからおじゃまが消された通知を受け取る
+        socket.on('obstacle-item', function(nameOfHinderingPlayer) {
+            alert(nameOfHinderingPlayer + " was decreased by " + player.decreased + " points.");
+        });
+         */  
     }
 
     /**
@@ -249,12 +282,6 @@
         sendScore(playerName, score).then(() => {
             getScores(playerName);
         });
-
-        // プレイヤーの人数を取得
-        getUserCount();
-
-        // ユーザーの人数を描画
-        drawUserNumber();
 
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
@@ -302,7 +329,7 @@
 
         
         // 復帰できるようにローカルに保存
-        updateGameState(playerName, score);
+        updateGameState(playerName, score, GAMETIME);
         
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -431,6 +458,7 @@
                             if(correct){
                                 // 正解音を鳴らす
                                 correctAnswer.play();
+                                sendObstacleSignal();
                             } else {
                                 // 不正解音を鳴らす
                                 wrongAnswer.play();
@@ -542,7 +570,7 @@
                 // 選択肢を配列にまとめる
                 let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
                 
-                // 問題オブジェクトを作成して配列に追加する
+                // 問題オブジェクトを作成して配列に追加する356.36
                 let questionObject = {
                     question: item.question,
                     choices: choices,
@@ -664,8 +692,8 @@
         ctx.fillText('参加人数：' + userCount, 10, 25);
     }
     // ゲーム状態の更新時にローカルストレージを更新する関数
-    function updateGameState(name, score) {
-        const state = { name: name, score: score };
+    function updateGameState(name, score, time) {
+        const state = { name: name, score: score, time: time};
         localStorage.setItem('gameState', JSON.stringify(state));
     }
 
@@ -704,4 +732,50 @@
         ctx.fillText(timeString, (canvas.width * 5) / 6, 30); // テキストを描画
     }
 
+    // お邪魔系を消した際にサーバーに通知
+    function sendObstacleSignal() {
+        console.log(playerName);
+        fetch('/obstacle-item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert(data.message); 
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });        
+    }
+
+    // ユーザーがおじゃまアイテムを削除したかをサーバーから受信
+    function getObstacle() {
+        setInterval(() => {
+            fetch('/item_removed', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    console.log('User name of hindering:', data.name);
+                    // おじゃまアイテムを消したユーザー名を格納
+                    hinderingPlayerName = data.name;
+                    isObstacle = true;
+                }
+                else {
+                    console.log('No user name of hindering');
+                }
+            })
+            .catch(error => console.error('Polling error:', error));
+        }, 5000); // 5秒ごとにポーリング
+    }
 })();
