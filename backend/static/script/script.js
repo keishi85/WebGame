@@ -104,7 +104,7 @@
     let quizInstance = null;
     /**
      * DBから取得した名前とスコアを格納{
-     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     * @type {Array<{ name: string, rank: number, score: number }>}
      */
     let scoresData = [];
     /**
@@ -126,7 +126,7 @@
      * 画像ファイルパスを格納する配列
      * @type {Array[string]}
      */
-    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
+    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png', 'static/images/obstacle.png'];
     /**
      * ユーザー数をカウント
      * @type {number}
@@ -141,7 +141,7 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 10; // 3分
+    let GAMETIME = 180; // 3分
     /**
      * サウンドを設定
      */
@@ -156,6 +156,18 @@
      * お邪魔が消されたかどうか
      */
     let isObstacle;
+    /**
+     * お邪魔攻撃を受ける割合
+     */
+    let ObstacleRate = 1/5;
+    /**
+     * Obstacleクラスのインスタンスを格納する変数
+     */
+    let obstacleArray = [];
+    /**
+     * 妨害の雲の数
+     */
+    let OBSTACLE_MAX_COUNT = 2;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -218,6 +230,12 @@
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
         quizInstance.loadImage();
 
+        // 妨害クラスの初期化
+        for(let i = 0; i < OBSTACLE_MAX_COUNT; ++i){
+            obstacleArray[i] = new Obstacle(ctx, 100 * (1 + i), 150 * (1 + i), 240, 120, CANVAS_WIDTH, 'static/images/cloud.png');
+            obstacleArray[i].loadImage();
+        }
+
         // サウンドの初期化
         correctAnswer = document.getElementById('correctAnswerSound');
         wrongAnswer = document.getElementById('wrongAnswerSound');
@@ -278,6 +296,7 @@
         if(gameActive){
             // 計算問題ブロックの更新
             blockArray.map((v) => {
+                v.setAppearanceObstacle(playerName, scoresData, ObstacleRate);
                 v.update();
                 if(questionType === 'Calculation'){
                     v.resetLife();
@@ -312,7 +331,14 @@
                 });
                 // 入力された数字の更新
                 drawInputNumber();
-            }      
+            }
+
+            // 妨害行為の更新
+            if(isObstacle === true){
+                obstacleArray.map((v) => {
+                    v.update();
+                })
+            }
 
             // 復帰できるようにローカルに保存
             updateGameState(playerName, score);
@@ -438,16 +464,25 @@
                             for(let i = 0; i < blockArray.length; ++i){
                                 // 正解かどうかの判定を行う
                                 let judgement = blockArray[i].checkAnswer(userAnswer);
-                                if(judgement !== 0){
-                                    // スコアを加算
-                                    score += judgement;
-                                    // 回答した数をインクリメント
-                                    calcSolvedCount++;
+
+                                if(judgement === 'OBSTACLE'){
+                                    sendObstacleSignal();
+                                    // isObstacle = true; // 仮にここでtrueにする
+                                    console.log('OBSTACLE');
                                     // 正解時はcorrectをtrueに
                                     correct = true;
                                     break;
+                                } else if(judgement !== 0){
+                                     // スコアを加算
+                                     score += judgement;
+                                     // 回答した数をインクリメント
+                                     calcSolvedCount++;
+                                     // 正解時はcorrectをtrueに
+                                     correct = true;
+                                     break;
                                 }
                             }
+
                             if(correct){
                                 // 正解音を鳴らす
                                 correctAnswer.play();
@@ -643,6 +678,7 @@
             });
     }
     
+    // プレイヤーのスコアを描画
     function drawPlayerNameAndScore(){
         // プレイヤー，順位，スコアを表示(10人まで)
         for(let i = 0; i < Math.min(10, scoresData.length); i++){
