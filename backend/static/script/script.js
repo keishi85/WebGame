@@ -149,9 +149,13 @@
     let wrongAnswer = null;
     let gameBGM = null;
     /**
-     * ゲーム進行中かどうか
+     * ゲーム進行中かどうか(True,False)
      */
     let gameActive;
+    /**
+     * お邪魔が消されたかどうか
+     */
+    let isObstacle;
 
     /**
      * ページのロードが完了したときに発火する load イベント
@@ -640,10 +644,11 @@
     }
     
     function drawPlayerNameAndScore(){
-        // プレイヤー，順位，スコアを表示
-        scoresData.forEach((player, index) => {
+        // プレイヤー，順位，スコアを表示(10人まで)
+        for(let i = 0; i < Math.min(10, scoresData.length); i++){
+            const player = scoresData[i];
             const x = 10; // 名前の開始位置
-            const y = 50 + 25 * index; // 縦方向の位置
+            const y = 50 + 25 * i; // 縦方向の位置
             const separator = " : "; // 区切り文字
             const rankText = `${Math.floor(player.rank)}  `;
             const nameText = `${player.name}`;
@@ -668,7 +673,7 @@
             
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
-        }); 
+        }
         
     }
 
@@ -745,6 +750,10 @@
          // canvasに描画
         ctx.fillText('After 10 seconds, move to the score screen', canvas.width / 2, canvas.height * 3 / 4 + 30, canvas.width- 10); // テキストを描画
 
+
+    }
+
+    function sendObstacleSignal(){
 
     }
 
