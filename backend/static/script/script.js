@@ -141,13 +141,18 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 100; // 3分
+    let GAMETIME = 10; // 3分
     /**
      * サウンドを設定
      */
     let correctAnswer = null;
     let wrongAnswer = null;
     let gameBGM = null;
+    /**
+     * ゲーム進行中かどうか
+     */
+    let gameActive;
+
     /**
      * ページのロードが完了したときに発火する load イベント
      */
@@ -190,6 +195,9 @@
         canvas.width = CANVAS_WIDTH;
         canvas.height = CANVAS_HEIGHT;
 
+        // gameStateをactiveに
+        gameActive = true;
+
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
@@ -215,8 +223,8 @@
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
-            // 残り時間を更新し、残り時間を描画
-            drawTimer();
+            // // 残り時間を更新し、残り時間を描画
+            // drawTimer();
 
             // 残り時間が5秒になったら音を鳴らす
             if (GAMETIME === 6) {
@@ -227,6 +235,7 @@
             // 残り時間が0になったらタイマーを停止し、ゲーム終了処理を実行
             if (GAMETIME === 0) {
                 clearInterval(timerInterval);
+                gameActive = false;
                 endGame();
             } else {
                 // 残り時間を1減らす
@@ -261,47 +270,55 @@
         // 計測時間を描画
         drawTimer();
 
-        // 計算問題ブロックの更新
-        blockArray.map((v) => {
-            v.update();
-            if(questionType === 'Calculation'){
-                v.resetLife();
-            }
-        });
-
-        // 数字キーのエリアの描画
-        util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
-
-        // 計算問題から，クイズへの切り替え
-        if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
-            questionType = 'Quiz';
-            quizInstance.life = 1;
-            calcSolvedCount = 0;
-        }
-        
-        // 計算問題 or クイズの更新
-        if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
-            // クイズの更新
-            quizInstance.update();
-            // クイズから計算問題へ切り替え
-            if(quizInstance.life === 0){
-                questionType = "Calculation";
-                blockArray.map((v) => {
-                    v.initialize();
-                });
-            }
-        } else {
-            // 数字キーの更新
-            numberKeyArray.map((v) => {
+        // ゲーム進行中の時
+        if(gameActive){
+            // 計算問題ブロックの更新
+            blockArray.map((v) => {
                 v.update();
+                if(questionType === 'Calculation'){
+                    v.resetLife();
+                }
             });
-             // 入力された数字の更新
-            drawInputNumber();
-        }      
+
+            // 数字キーのエリアの描画
+            util.drawRect(0, canvas.height - KEYPAD_HEIGHT, canvas.width, KEYPAD_HEIGHT, '#32cd32'); 
+
+            // 計算問題から，クイズへの切り替え
+            if(calcSolvedCount % CHANGE_CALCULATION_QUESTION === 0 && calcSolvedCount !== 0 && questionType === 'Calculation'){
+                questionType = 'Quiz';
+                quizInstance.life = 1;
+                calcSolvedCount = 0;
+            }
+            
+            // 計算問題 or クイズの更新
+            if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
+                // クイズの更新
+                quizInstance.update();
+                // クイズから計算問題へ切り替え
+                if(quizInstance.life === 0){
+                    questionType = "Calculation";
+                    blockArray.map((v) => {
+                        v.initialize();
+                    });
+                }
+            } else {
+                // 数字キーの更新
+                numberKeyArray.map((v) => {
+                    v.update();
+                });
+                // 入力された数字の更新
+                drawInputNumber();
+            }      
+
+            // 復帰できるようにローカルに保存
+            updateGameState(playerName, score);
+
+        } else {
+            // 終了の合図を描画
+            drawEndGame();
+        }
 
         
-        // 復帰できるようにローカルに保存
-        updateGameState(playerName, score);
         
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -519,7 +536,7 @@
         if(inputNumber === null){return;}
         // テキストの描画
         ctx.fillStyle = '#ff0000';
-        ctx.strokeStyle = '#000000'
+        ctx.strokeStyle = '#000000';
         ctx.font = "bold 30px 'Segoe Print', san-serif";
         ctx.textAlign = "center";
         ctx.lineWidth = 1;
@@ -675,9 +692,10 @@
             score = state.score;
         }
     }
+
     function endGame() {
-        // ゲーム終了のアラートを表示
-        alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
+        // // ゲーム終了のアラートを表示
+        // alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
     
         // 10秒後に画面遷移を行う
         setTimeout(() => {
@@ -701,6 +719,33 @@
     
         // 残り時間をcanvasに描画
         ctx.fillText(timeString, (canvas.width * 5) / 6, 30); // テキストを描画
+    }
+
+    function drawEndGame(){
+        // テキストのスタイル設定
+        ctx.fillStyle = '#ff0000'; // テキストの色
+        ctx.font = "bold 50px 'Segoe Print', sans-serif"; // フォントスタイル
+        ctx.textAlign = "center"; // テキストを中央揃え
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 1;
+    
+        // canvasに描画
+        ctx.fillText('FINISH', canvas.width / 2, canvas.height / 2); // テキストを描画
+        ctx.strokeText('FINISH', canvas.width / 2, canvas.height / 2); // テキストを描画
+
+        // テキストのスタイル設定
+        ctx.font = "bold 25px 'Segoe Print', sans-serif"; // フォントスタイル
+    
+        // canvasに描画
+        ctx.fillText('10秒後にスコア画面に移ります.', canvas.width / 2, canvas.height * 3 / 4, canvas.width - 10); // テキストを描画
+
+        // テキストのスタイル設定
+        ctx.font = "bold 20px 'Segoe Print', sans-serif"; // フォントスタイル
+
+         // canvasに描画
+        ctx.fillText('After 10 seconds, move to the score screen', canvas.width / 2, canvas.height * 3 / 4 + 30, canvas.width- 10); // テキストを描画
+
+
     }
 
 })();
