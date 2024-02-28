@@ -288,7 +288,7 @@ class Block{
      * @returns 
      */
     setAppearanceObstacle(playerName, scoreDate, rate){
-        for(let i = 0; i < Math.floor(scoreDate.length * rate); i++){
+        for(let i = 0; i < Math.ceil(scoreDate.length * rate); i++){
             if(scoreDate[i].name === playerName){
                 this.appearanceObstacle = false;
                 return;
@@ -752,6 +752,7 @@ class Obstacle{
         this.speed = 1;
         this.imgPath = imgPath;
         this.direction = 'right' // 進む方向
+        this.isDisturbed = false;
     }
 
     /**
@@ -807,5 +808,22 @@ class Obstacle{
         this.img.onload = this.onImageLoad.bind(this);
         this.img.onerror = this.onImageError.bind(this);
         this.img.src = this.imgPath;
+    }
+
+    /**
+     * お邪魔の攻撃を受けるかどうか
+     * @param {string} playerName 
+     * @param {Array<{ name: string, rank: number, score: number }>} scoreDate 
+     * @param {number} rate 
+     * @returns 
+     */
+    setAppearanceObstacle(playerName, scoreDate, rate){
+        for(let i = 0; i < Math.ceil(scoreDate.length * rate); i++){
+            if(scoreDate[i].name === playerName){
+                this.isDisturbed = true;
+                return;
+            }
+        } 
+        this.appearanceObstacle = false;
     }
 }

@@ -486,7 +486,7 @@
                                     break;
                                 } else if(judgement !== 0){
                                      // スコアを加算
-                                     score += judgement;
+                                     score += Number(judgement);
                                      // 回答した数をインクリメント
                                      calcSolvedCount++;
                                      // 正解時はcorrectをtrueに
