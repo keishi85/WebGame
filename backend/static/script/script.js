@@ -851,9 +851,12 @@
         // お邪魔攻撃を開始
         isObstacle = true;
         // ブロックの落ちる速度を上げる
-        blockArray.map((v) => {
-            v.speed = 1.0;
-        })
+        if(obstacleArray.isDisturbed){
+            blockArray.map((v) => {
+                v.speed = 1.0;
+            })
+        }
+       
 
         // 20秒後に元に戻す
         setTimeout(() => {
@@ -878,6 +881,7 @@
 
         // お邪魔の描画
         obstacleArray.map((v) => {
+            v.setAppearanceObstacle(playerName, scoresData, ObstacleRate);
             v.update();
         })
 
