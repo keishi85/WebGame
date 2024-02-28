@@ -20,9 +20,6 @@
      * ゲームスタート画面が完了したときに発火する load イベント
      */
     document.addEventListener('DOMContentLoaded', () => {
-        // ローカルストレージをクリア
-        // localStorage.clear();
-
         const nameInput = document.getElementById('name');
         const startGameButton = document.getElementById('startGame');
 
@@ -73,9 +70,6 @@
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
             } else {
-                // 名前をローカルストレージに保存
-                localStorage.setItem('playerName', name);
-
                 try {
                     await submitUser(); // 参加人数をサーバーに送信
 
@@ -197,9 +191,13 @@ function pollForGameStart() {
         .then(response => response.json())
         .then(data => {
             if (data.game_started) {
+                // 名前をローカルストレージに保存
+                localStorage.setItem('playerName', name);
                 // ゲーム開始の合図があればゲームページに遷移
                 window.location.href = `/game?name=${encodeURIComponent(name)}`;
             } else {
+                // ローカルストレージをクリア
+                localStorage.clear();
                 // まだゲーム開始の合図がなければ、数秒後に再度確認
                 setTimeout(pollForGameStart, 3000);
             }
