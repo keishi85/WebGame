@@ -178,6 +178,10 @@
      * @type {string}
      */
     let hinderingPlayerName = null;
+    /**
+     * お邪魔攻撃の開始時間
+     */
+    let obstacleStartTime = null;
 
 
     /* 
@@ -231,9 +235,6 @@
         // プレイヤーの人数を取得
         getUserCount();
 
-        // ユーザーの人数を描画
-        drawUserNumber();
-
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -262,8 +263,6 @@
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
-            // // 残り時間を更新し、残り時間を描画
-            // drawTimer();
 
             // 残り時間が5秒になったら音を鳴らす
             if (GAMETIME === 6) {
@@ -310,6 +309,9 @@
         sendScore(playerName, score).then(() => {
             getScores(playerName);
         });
+
+        // ユーザーの人数を描画
+        drawUserNumber();
 
         // 各プレイヤーの名前，順位，スコアを描画
         drawPlayerNameAndScore();
@@ -360,9 +362,7 @@
 
             // 妨害行為の更新
             if(isObstacle === true){
-                obstacleArray.map((v) => {
-                    v.update();
-                })
+                drawObstacle();
             }
         
             // 復帰できるようにローカルに保存
@@ -431,15 +431,7 @@
             x = event.pageX - canvas.offsetLeft;
             y = event.pageY - canvas.offsetTop;
         }
-        // else if(event.type === 'touchstart'){
-        //     // タッチの時
-        //     let touch = event.touches[0];
-        //     x = touch.pageX - canvas.offsetLeft;
-        //     y = touch.pageY - canvas.offsetTop;
-        // }
 
-       
-    
         if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
             // クイズの時
             ClickChoicesArea(x, y);
@@ -659,11 +651,11 @@
         .then(response => response.json())
         // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
-            //console.log('Success:', data);
+            // console.log('Success:', data);
             return data; // ここでPromiseを解決
         })
         .catch((error) => {
-            //console.error('Error:', error);
+            console.error('Error:', error);
         });
     }
     /**
@@ -756,9 +748,6 @@
     }
 
     function endGame() {
-        // // ゲーム終了のアラートを表示
-        // alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
-    
         // 10秒後に画面遷移を行う
         setTimeout(() => {
             window.location.href = '/game_end';
@@ -826,7 +815,7 @@
         })
         .then(data => {
             console.log('Success:', data);
-            alert(data.message); 
+            // alert(data.message); 
         })
         .catch((error) => {
             console.error('Error:', error);
@@ -845,7 +834,8 @@
                     console.log('User name of hindering:', data.name);
                     // おじゃまアイテムを消したユーザー名を格納
                     hinderingPlayerName = data.name;
-                    isObstacle = true;
+                    // 妨害開始
+                    startObstacle();
                 }
                 else {
                     console.log('No user name of hindering');
@@ -853,5 +843,55 @@
             })
             .catch(error => console.error('Polling error:', error));
         }, 5000); // 5秒ごとにポーリング
+    }
+
+    // お邪魔攻撃を開始する
+    function startObstacle(){
+        // 開始時間を記録
+        obstacleStartTime = Date.now()
+        // お邪魔攻撃を開始
+        isObstacle = true;
+        // ブロックの落ちる速度を上げる
+        blockArray.map((v) => {
+            v.speed = 1.0;
+        })
+
+        // 20秒後に元に戻す
+        setTimeout(() => {
+            // isObstacleをfalseに設定する
+            isObstacle = false;
+            // ブロックの落ちる速度を元に戻す
+            blockArray.map((v) => {
+                v.speed = 0.4;
+            })
+        }, 20000);
+
+    }
+
+    // お邪魔を描画する
+    function drawObstacle(){
+
+        // 現在の時間を取得
+        const currentTime = Date.now();
+        
+        // 開始時間から経過した時間を計算（ミリ秒単位）
+        const elapsedTime = currentTime - obstacleStartTime;
+
+        // お邪魔の描画
+        obstacleArray.map((v) => {
+            v.update();
+        })
+
+        // 最初2秒間のみテキストを表示
+        if(elapsedTime < 2000){ 
+            // テキストのスタイル設定
+            ctx.fillStyle = '#ff0000'; // テキストの色
+            ctx.font = "bold 20px 'Segoe Print', sans-serif"; // フォントスタイル
+            ctx.textAlign = "center"; // テキストを中央揃え
+        
+            // canvasに描画
+            ctx.fillText('"'+hinderingPlayerName+'"さんがお邪魔ブロックを消しました．', canvas.width / 2, canvas.height / 3, CANVAS_WIDTH); // テキストを描画
+        }
+        
     }
 })();
