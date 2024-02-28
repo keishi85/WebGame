@@ -185,25 +185,25 @@ class Block{
             let addScore = 0;
             switch(fruit){
                 case 'PEACH':
-                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    addScore = (Math.floor(100 * (this.area - this.position.y)) / 100).toFixed(1);
                     //addScore = Math.floor(3 * (this.area - this.position.y) * 100) / 100; // 小数点第2位で切り捨て
                     console.log(addScore);
                     break;
                 
                 case 'APPLE':
-                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    addScore = (Math.floor(50 * (this.area - this.position.y)) / 100).toFixed(1);
                     //addScore = Math.floor(2 * (this.area - this.position.y) * 100) / 100;
                     console.log(addScore);
                     break;
                 
                 case 'ORANGE':
-                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    addScore = (Math.floor(30 * (this.area - this.position.y)) / 100).toFixed(1);
                     //addScore = Math.floor(1 * (this.area - this.position.y) * 100) / 100;
                     console.log(addScore);
                     break;
                 
                 case 'LEMON':
-                    addScore = (Math.floor(3 * (this.area - this.position.y) * 100) / 100).toFixed(1);
+                    addScore = (Math.floor(10 * (this.area - this.position.y)) / 100).toFixed(1);
                     //addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
                     console.log(addScore);
                     break;
@@ -772,6 +772,9 @@ class Obstacle{
      * ブロックの位置の更新
      */
     update(){
+        // 
+        if(this.isDisturbed === false) {return;}
+
         if(this.direction === 'right'){
             // 右に進める
             this.position.x += this.speed;
