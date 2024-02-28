@@ -862,14 +862,7 @@
         obstacleStartTime = Date.now()
         // お邪魔攻撃を開始
         isObstacle = true;
-        // ブロックの落ちる速度を上げる
-        if(obstacleArray.isDisturbed){
-            blockArray.map((v) => {
-                v.speed = 1.0;
-            })
-        }
-       
-
+        
         // 20秒後に元に戻す
         setTimeout(() => {
             // isObstacleをfalseに設定する
@@ -896,6 +889,13 @@
             v.setAppearanceObstacle(playerName, scoresData, ObstacleRate);
             v.update();
         })
+
+        // ブロックの落ちる速度を上げる
+        if(obstacleArray[0].isDisturbed){
+            blockArray.map((v) => {
+                v.speed = 1.0;
+            })
+        }
 
         // 最初2秒間のみテキストを表示
         if(elapsedTime < 2000){ 
