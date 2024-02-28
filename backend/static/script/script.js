@@ -141,11 +141,18 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME =  localStorage.getItem('time'); 
-    if (GAMETIME === null) {
+    let gameState = localStorage.getItem('gameState'); // ゲーム状態のオブジェクトを取得
+    let GAMETIME;
+
+    if (gameState === null) {
         GAMETIME = 100; // デフォルト値を設定
     } else {
-        GAMETIME = parseInt(GAMETIME, 10); // localStorageから取得した値は文字列なので数値に変換
+        gameState = JSON.parse(gameState); // 文字列をオブジェクトに変換
+        if (gameState.time !== undefined) {
+            GAMETIME = parseInt(gameState.time, 10); // オブジェクトからtimeプロパティを取得して数値に変換
+        } else {
+            GAMETIME = 100; // timeプロパティが未定義の場合はデフォルト値を設定
+        }
     }
     /**
      * サウンドを設定
