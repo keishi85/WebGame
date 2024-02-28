@@ -20,9 +20,6 @@
      * ゲームスタート画面が完了したときに発火する load イベント
      */
     document.addEventListener('DOMContentLoaded', () => {
-        // ローカルストレージをクリア
-        // localStorage.clear();
-
         const nameInput = document.getElementById('name');
         const startGameButton = document.getElementById('startGame');
 
@@ -68,16 +65,26 @@
         
         startGameButton.addEventListener('click', async () => {
             name = nameInput.value.trim(); // 名前入力の前後の空白を削除
+
+            let fullChars = 0, halfChars = 0;
+
+            for (let i = 0; i < name.length; i++) {
+                // 全角文字かどうかをチェック
+                if (name.charCodeAt(i) > 255) {
+                    fullChars++;
+                } else {
+                    halfChars++;
+                }
+            }
+
     
             if (name === '') {
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
-            } else {
-                // // 名前をローカルストレージに保存
-                localStorage.setItem('playerName', name);
-
-                // updateGameState(name, 0); // ゲームの状態をローカルストレージに保存
-
+            }else if (halfChars > 8 || fullChars > 5 || (halfChars + fullChars) > 8){
+                alert('アルファベットは8文字以内、全角文字は5文字以内で入力してください。');
+            }
+             else {
                 try {
                     await submitUser(); // 参加人数をサーバーに送信
 
@@ -199,9 +206,13 @@ function pollForGameStart() {
         .then(response => response.json())
         .then(data => {
             if (data.game_started) {
+                // 名前をローカルストレージに保存
+                localStorage.setItem('playerName', name);
                 // ゲーム開始の合図があればゲームページに遷移
                 window.location.href = `/game?name=${encodeURIComponent(name)}`;
             } else {
+                // ローカルストレージをクリア
+                localStorage.clear();
                 // まだゲーム開始の合図がなければ、数秒後に再度確認
                 setTimeout(pollForGameStart, 3000);
             }

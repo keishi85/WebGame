@@ -104,7 +104,7 @@
     let quizInstance = null;
     /**
      * DBから取得した名前とスコアを格納{
-     * @type {Array<{ question: string, choices: string[], answer: string }>}
+     * @type {Array<{ name: string, rank: number, score: number }>}
      */
     let scoresData = [];
     /**
@@ -126,7 +126,7 @@
      * 画像ファイルパスを格納する配列
      * @type {Array[string]}
      */
-    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png'];
+    const imgPath = ['static/images/peach.png', 'static/images/apple.png', 'static/images/orange.png', 'static/images/lemon.png', 'static/images/obstacle.png'];
     /**
      * ユーザー数をカウント
      * @type {number}
@@ -141,7 +141,19 @@
      * ゲーム時間を設定
      * @type {number}
      */
-    let GAMETIME = 10; // 3分
+    let gameState = localStorage.getItem('gameState'); // ゲーム状態のオブジェクトを取得
+    let GAMETIME;
+
+    if (gameState === null) {
+        GAMETIME = 180; // デフォルト値を設定
+    } else {
+        gameState = JSON.parse(gameState); // 文字列をオブジェクトに変換
+        if (gameState.time !== undefined) {
+            GAMETIME = parseInt(gameState.time, 10); // オブジェクトからtimeプロパティを取得して数値に変換
+        } else {
+            GAMETIME = 100; // timeプロパティが未定義の場合はデフォルト値を設定
+        }
+    }
     /**
      * サウンドを設定
      */
@@ -149,13 +161,39 @@
     let wrongAnswer = null;
     let gameBGM = null;
     /**
-     * ゲーム進行中かどうか
+     * ゲーム進行中かどうか(True,False)
      */
     let gameActive;
-
     /**
-     * ページのロードが完了したときに発火する load イベント
+     * お邪魔攻撃を受ける割合
      */
+    let ObstacleRate = 1/4;
+    /**
+     * Obstacleクラスのインスタンスを格納する変数
+     */
+    let obstacleArray = [];
+    /**
+     * 妨害の雲の数
+     */
+    let OBSTACLE_MAX_COUNT = 2;
+    /**
+     * おじゃまが消されたどうか
+    */
+    let isObstacle = false;
+    /**
+     * おじゃまアイテムを消したユーザー名
+     * @type {string}
+     */
+    let hinderingPlayerName = null;
+    /**
+     * お邪魔攻撃の開始時間
+     */
+    let obstacleStartTime = null;
+
+
+    /* 
+    * ページのロードが完了したときに発火する load イベント
+    */
     window.addEventListener('load', () => {
         // ユーティリティクラスを初期化
         util = new Canvas2DUtility(document.body.querySelector('#main_canvas'));
@@ -201,6 +239,9 @@
         // データベースから問題を取得(ブロックの初期化より前)
         getDB();
 
+        // プレイヤーの人数を取得
+        getUserCount();
+
         // ブロックを初期化する
         for(let i = 0; i < BLOCK_MAX_COUNT; ++i){
             blockArray[i] = new Block(ctx, 75 + 125 * i, -50, 60, 0, canvas.height - KEYPAD_HEIGHT, calcData, imgPath);
@@ -214,6 +255,12 @@
         quizInstance = new Quiz(ctx, 200, -50, 300, 100, 0, canvas.height - KEYPAD_HEIGHT, quizData, 'static/images/leaves.png');
         quizInstance.loadImage();
 
+        // 妨害クラスの初期化
+        for(let i = 0; i < OBSTACLE_MAX_COUNT; ++i){
+            obstacleArray[i] = new Obstacle(ctx, 100 * (1 + i), 150 * (1 + i), 240, 120, CANVAS_WIDTH, 'static/images/cloud.png');
+            obstacleArray[i].loadImage();
+        }
+
         // サウンドの初期化
         correctAnswer = document.getElementById('correctAnswerSound');
         wrongAnswer = document.getElementById('wrongAnswerSound');
@@ -223,8 +270,6 @@
         
         // ゲーム時間の計測を開始
         const timerInterval = setInterval(() => {
-            // // 残り時間を更新し、残り時間を描画
-            // drawTimer();
 
             // 残り時間が5秒になったら音を鳴らす
             if (GAMETIME === 6) {
@@ -236,12 +281,39 @@
             if (GAMETIME === 0) {
                 clearInterval(timerInterval);
                 gameActive = false;
+                localStorage.clear();
                 endGame();
             } else {
                 // 残り時間を1減らす
                 GAMETIME -= 1;
             }
         }, 1000); // 1秒ごとに更新
+
+        const scoreInterval = setInterval(() => {
+            // スコアの更新
+            console.log(playerName, score);
+            sendScore(playerName, score).then(() => {
+                getScores(playerName);
+            });
+        }, 1000); // 1秒ごとに更新
+
+        // ゲーム時間の計測を開始
+        const userCountInterval = setInterval(() => {
+            getUserCount();
+        }, 10000); // 1秒ごとに更新
+
+        // おじゃまアイテムを他のユーザが削除したかを受信(Polling request)
+        getObstacle();
+
+        /**
+         * websocketの使用は断念
+         * var socket = io(); // 自動的に現在のページのURLを使用
+
+        // サーバーからおじゃまが消された通知を受け取る
+        socket.on('obstacle-item', function(nameOfHinderingPlayer) {
+            alert(nameOfHinderingPlayer + " was decreased by " + player.decreased + " points.");
+        });
+         */  
     }
 
     /**
@@ -252,14 +324,6 @@
         util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
         // 画像をCanvasの背景に描画
         ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
-
-        // スコアの更新
-        sendScore(playerName, score).then(() => {
-            getScores(playerName);
-        });
-
-        // プレイヤーの人数を取得
-        getUserCount();
 
         // ユーザーの人数を描画
         drawUserNumber();
@@ -274,6 +338,7 @@
         if(gameActive){
             // 計算問題ブロックの更新
             blockArray.map((v) => {
+                v.setAppearanceObstacle(playerName, scoresData, ObstacleRate);
                 v.update();
                 if(questionType === 'Calculation'){
                     v.resetLife();
@@ -308,17 +373,18 @@
                 });
                 // 入力された数字の更新
                 drawInputNumber();
-            }      
+            }
 
+            // 妨害行為の更新
+            if(isObstacle === true){
+                drawObstacle();
+            }
+        
             // 復帰できるようにローカルに保存
-            updateGameState(playerName, score);
-
+            updateGameState(playerName, score, GAMETIME);
         } else {
-            // 終了の合図を描画
             drawEndGame();
         }
-
-        
         
         // フレーム更新ごとに再起呼び出し
         requestAnimationFrame(render);
@@ -380,15 +446,7 @@
             x = event.pageX - canvas.offsetLeft;
             y = event.pageY - canvas.offsetTop;
         }
-        // else if(event.type === 'touchstart'){
-        //     // タッチの時
-        //     let touch = event.touches[0];
-        //     x = touch.pageX - canvas.offsetLeft;
-        //     y = touch.pageY - canvas.offsetTop;
-        // }
 
-       
-    
         if(questionType === 'Quiz' && blockArray.every(block => block.life === 0)){
             // クイズの時
             ClickChoicesArea(x, y);
@@ -434,16 +492,24 @@
                             for(let i = 0; i < blockArray.length; ++i){
                                 // 正解かどうかの判定を行う
                                 let judgement = blockArray[i].checkAnswer(userAnswer);
-                                if(judgement !== 0){
-                                    // スコアを加算
-                                    score += judgement;
-                                    // 回答した数をインクリメント
-                                    calcSolvedCount++;
+
+                                if(judgement === 'OBSTACLE'){
+                                    sendObstacleSignal();
+                                    console.log('OBSTACLE');
                                     // 正解時はcorrectをtrueに
                                     correct = true;
                                     break;
+                                } else if(judgement !== 0){
+                                     // スコアを加算
+                                     score += Number(judgement);
+                                     // 回答した数をインクリメント
+                                     calcSolvedCount++;
+                                     // 正解時はcorrectをtrueに
+                                     correct = true;
+                                     break;
                                 }
                             }
+
                             if(correct){
                                 // 正解音を鳴らす
                                 correctAnswer.play();
@@ -558,7 +624,7 @@
                 // 選択肢を配列にまとめる
                 let choices = [item.choice1, item.choice2, item.choice3, item.choice4];
                 
-                // 問題オブジェクトを作成して配列に追加する
+                // 問題オブジェクトを作成して配列に追加する356.36
                 let questionObject = {
                     question: item.question,
                     choices: choices,
@@ -599,11 +665,11 @@
         .then(response => response.json())
         // 以下のreturnはさらに".then"がある場合に必要となるもの
         .then(data => {
-            //console.log('Success:', data);
+            // console.log('Success:', data);
             return data; // ここでPromiseを解決
         })
         .catch((error) => {
-            //console.error('Error:', error);
+            console.error('Error:', error);
         });
     }
     /**
@@ -639,11 +705,13 @@
             });
     }
     
+    // プレイヤーのスコアを描画
     function drawPlayerNameAndScore(){
-        // プレイヤー，順位，スコアを表示
-        scoresData.forEach((player, index) => {
+        // プレイヤー，順位，スコアを表示(10人まで)
+        for(let i = 0; i < Math.min(10, scoresData.length); i++){
+            const player = scoresData[i];
             const x = 10; // 名前の開始位置
-            const y = 50 + 25 * index; // 縦方向の位置
+            const y = 50 + 25 * i; // 縦方向の位置
             const separator = " : "; // 区切り文字
             const rankText = `${Math.floor(player.rank)}  `;
             const nameText = `${player.name}`;
@@ -668,8 +736,7 @@
             
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
-        }); 
-        
+        }
     }
 
     function drawUserNumber(){
@@ -680,8 +747,8 @@
         ctx.fillText('参加人数：' + userCount, 10, 25);
     }
     // ゲーム状態の更新時にローカルストレージを更新する関数
-    function updateGameState(name, score) {
-        const state = { name: name, score: score };
+    function updateGameState(name, score, time) {
+        const state = { name: name, score: score, time: time};
         localStorage.setItem('gameState', JSON.stringify(state));
     }
 
@@ -694,9 +761,6 @@
     }
 
     function endGame() {
-        // // ゲーム終了のアラートを表示
-        // alert('ゲームが終了しました. 10秒後に結果画面へ移動します\nThe game has ended. You will be redirected to the results screen in 10 seconds');
-    
         // 10秒後に画面遷移を行う
         setTimeout(() => {
             window.location.href = '/game_end';
@@ -744,8 +808,109 @@
 
          // canvasに描画
         ctx.fillText('After 10 seconds, move to the score screen', canvas.width / 2, canvas.height * 3 / 4 + 30, canvas.width- 10); // テキストを描画
+    }
 
+    // お邪魔系を消した際にサーバーに通知
+    function sendObstacleSignal() {
+        console.log(playerName);
+        fetch('/obstacle-item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name: playerName}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            // alert(data.message); 
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });        
+    }
+
+    // ユーザーがおじゃまアイテムを削除したかをサーバーから受信
+    function getObstacle() {
+        setInterval(() => {
+            fetch('/item_removed', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.name) {
+                    console.log('User name of hindering:', data.name);
+                    if (hinderingPlayerName === data.name) {
+                        return;
+                    }
+                    // おじゃまアイテムを消したユーザー名を格納
+                    hinderingPlayerName = data.name;
+                    // 妨害開始
+                    startObstacle();
+                }
+                else {
+                    console.log('No user name of hindering');
+                }
+            })
+            .catch(error => console.error('Polling error:', error));
+        }, 5000); // 5秒ごとにポーリング
+    }
+
+    // お邪魔攻撃を開始する
+    function startObstacle(){
+        // 開始時間を記録
+        obstacleStartTime = Date.now()
+        // お邪魔攻撃を開始
+        isObstacle = true;
+        
+        // 20秒後に元に戻す
+        setTimeout(() => {
+            // isObstacleをfalseに設定する
+            isObstacle = false;
+            // ブロックの落ちる速度を元に戻す
+            blockArray.map((v) => {
+                v.speed = 0.4;
+            })
+        }, 20000);
 
     }
 
+    // お邪魔を描画する
+    function drawObstacle(){
+
+        // 現在の時間を取得
+        const currentTime = Date.now();
+        
+        // 開始時間から経過した時間を計算（ミリ秒単位）
+        const elapsedTime = currentTime - obstacleStartTime;
+
+        // お邪魔の描画
+        obstacleArray.map((v) => {
+            v.setAppearanceObstacle(playerName, scoresData, ObstacleRate);
+            v.update();
+        })
+
+        // ブロックの落ちる速度を上げる
+        if(obstacleArray[0].isDisturbed){
+            blockArray.map((v) => {
+                v.speed = 1.2;
+            })
+        }
+
+        // 最初2秒間のみテキストを表示
+        if(elapsedTime < 2000){ 
+            // テキストのスタイル設定
+            ctx.fillStyle = '#ff0000'; // テキストの色
+            ctx.font = "bold 20px 'Segoe Print', sans-serif"; // フォントスタイル
+            ctx.textAlign = "center"; // テキストを中央揃え
+        
+            // canvasに描画
+            ctx.fillText('"'+hinderingPlayerName+'"さんがお邪魔ブロックを消しました．', canvas.width / 2, canvas.height / 3, CANVAS_WIDTH); // テキストを描画
+        }   
+    }
 })();

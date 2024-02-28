@@ -51,7 +51,6 @@ canvas {
      /* 枠線のスタイル設定 */
     border: 2px solid #FF4500; /* 枠線の色と太さ a*/
     height: 200px; /* 適切な高さを指定 */
-    overflow-y: auto; /* スクロール可能にする */
 }
 
 .game-rules-container {
@@ -72,7 +71,6 @@ canvas {
     /* 枠線のスタイル設定 */
     border: 2px solid #FF4500; /* 枠線の色と太さ */
     height: 400px; /* 適切な高さを指定 */
-    overflow-y: auto; /* スクロール可能にする */
 }
 
 
@@ -119,4 +117,18 @@ button:hover {
     h1 {
         font-size: 1.5em; /* 例: 1.5emは基本サイズの1.5倍 */
     }
+}
+
+/* ボタンのスタイル */
+#deleteDb {
+    display: block; /* ブロックレベル要素として表示 */
+    width: 100%; /* 親要素の幅いっぱいに広がる */
+    margin: 10px 0; /* 上下にマージンを設ける (左右のマージンは0) */
+    padding: 10px 0; /* パディングを適用 */
+    font-size: 1.0em; /* フォントサイズを調整 */
+    background-color: #FF8C00; /* DB削除ボタンの背景色を変更 */
+    color: white; /* ボタンの文字色 */
+    border: none; /* ボタンの枠線をなくす */
+    border-radius: 5px; /* ボタンの角を丸くする */
+    cursor: pointer; /* マウスオーバー時のカーソルを指にする */
 }

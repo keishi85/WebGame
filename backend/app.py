@@ -1,19 +1,21 @@
 from flask import Flask, render_template, jsonify, request
 from flask_pymongo import PyMongo
 from flask_socketio import SocketIO, emit
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
-
-user_count = 0
-# ゲーム開始の状態を管理する変数
-game_started = False
 
 # MongoDBへの接続設定
 app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
 mongo = PyMongo(app)
+
+user_count = 0
+game_started = False    # ゲーム開始の状態を管理する変数
+nameOfHinderingPlayer = None    # お邪魔アイテムを使ったプレイヤーの名前
+isObstacleRemoved = False    # お邪魔アイテムが消されたかどうか
+obstacle_removed_info = {"isRemoved": False, "name": None, "removalTime": None}  # おじゃまが削除されたことをトラックするための辞書を用意
 
 # ゲーム開始ボタンのエンドポイント
 @app.route('/')
@@ -58,8 +60,8 @@ def get_scores():
     result_list = []
     player_included = False
     for rank, player in enumerate(all_scores_list, start=1):
-        # 上位3人のプレイヤーを追加
-        if rank <= 3:
+        # 上位10人のプレイヤーを追加
+        if rank <= 10:
             player['rank'] = rank
             result_list.append(player)
             if player['name'] == player_name:
@@ -94,10 +96,41 @@ def check_game_start():
         return jsonify({'game_started': True})
     else:
         return jsonify({'game_started': False})
+    
+# プレイヤーがお邪魔アイテムを消したことを通知するエンドポイント
+@app.route('/obstacle-item', methods=['POST'])
+def getObstacleDeleted():
+    global obstacle_removed_info
+    data = request.get_json()
+    obstacle_removed_info["isRemoved"] = True
+    obstacle_removed_info["name"] = data.get('name')
+    obstacle_removed_info["removalTime"] = datetime.now()
+
+    # 減点後の結果をクライアントに通知
+    return jsonify({'message': f'{obstacle_removed_info["name"]} hindering'})
+
+# おじゃまが消されたことを全ユーザに通知
+@app.route('/item_removed', methods=['GET'])
+def send_obstacle():
+    if obstacle_removed_info["isRemoved"] and datetime.now() <= obstacle_removed_info["removalTime"] + timedelta(seconds=10):
+
+        # おじゃまが削除された情報をクライアントに送信
+        response = jsonify({'name': obstacle_removed_info["name"]})
+        return response
+    
+    else:
+        obstacle_removed_info["isRemoved"] = False
+        obstacle_removed_info["name"] = None
+        obstacle_removed_info["removalTime"] = None
+        return jsonify({'message': 'No player has removed the obstacle'})
 
 # ゲームが終了したタイミングで遷移
 @app.route('/game_end')
 def game_end():
+    # ゲームをスタートしないように設定
+    global game_started
+    game_started = False
+
     # スコアが高い順にソートして全プレイヤーを取得
     all_scores = mongo.db.scores.find().sort('score', -1)
     return render_template('gameEnd.html', scores=all_scores)
@@ -114,6 +147,18 @@ def signal_game_start():
     game_started = True
     return jsonify({'message': 'Game start signaled'})
 
+# スーパーユーザーから全てのスコアを削除するエンドポイント
+@app.route('/delete_all_scores', methods=['POST'])
+def delete_all_scores():
+    mongo.db.scores.delete_many({})
+    return jsonify({'message': 'All scores have been successfully deleted.'})
+
+# スーパーユーザからゲームのスタートをfalseにするエンドポイント
+@app.route('/reset_game_start', methods=['POST'])
+def reset_game_start():
+    global game_started
+    game_started = False
+    return jsonify({'message': 'Game start has been reset.'})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)

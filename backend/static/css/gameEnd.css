@@ -30,7 +30,7 @@ html, body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center; /* 子要素を中央揃えにする */
     margin-bottom: 15px; /* 下部に隙間を追加 */
-    margin-top: 45px;
+    margin-top: 10px;
      /* 枠線のスタイル設定 */
     border: 2px solid #FF4500; /* 枠線の色と太さ a*/
     overflow-y: auto; /* スクロール可能にする */
@@ -96,35 +96,40 @@ h1 {
 tbody tr:nth-child(1) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/gold.png'); /* 金の王冠の画像のURLを設定 */
     vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 tbody tr:nth-child(2) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/silver.png'); /* 銀の王冠の画像のURLを設定 */
+    vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 tbody tr:nth-child(3) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/bronze.png'); /* 銅の王冠の画像のURLを設定 */
+    vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 /* ランクが一位、二位、三位以外の場合には空の要素を表示 */
@@ -145,6 +150,7 @@ tbody tr td:first-child::before {
     border-radius: 5px; /* Rounded corners */
     cursor: pointer; /* Change cursor to pointer on hover */
     margin-top: 7px; /* Add some space above the button */
+    margin-bottom: 5px; /* Reduce space below the button if needed */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
     transition: background-color 0.3s, transform 0.2s; /* Smooth transition for interactions */
 }
@@ -157,5 +163,3 @@ tbody tr td:first-child::before {
 #playButton:active {
     transform: translateY(1px); /* Push down effect when clicked */
 }
-
-
