@@ -827,6 +827,6 @@ class Obstacle{
                 return;
             }
         } 
-        this.appearanceObstacle = false;
+        this.isDisturbed = false;
     }
 }
