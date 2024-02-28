@@ -59,8 +59,8 @@ def get_scores():
     result_list = []
     player_included = False
     for rank, player in enumerate(all_scores_list, start=1):
-        # 上位3人のプレイヤーを追加
-        if rank <= 3:
+        # 上位10人のプレイヤーを追加
+        if rank <= 10:
             player['rank'] = rank
             result_list.append(player)
             if player['name'] == player_name:

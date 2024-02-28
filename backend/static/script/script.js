@@ -289,6 +289,11 @@
             }
         }, 1000); // 1秒ごとに更新
 
+        // ゲーム時間の計測を開始
+        const userCountInterval = setInterval(() => {
+            getUserCount();
+        }, 10000); // 1秒ごとに更新
+
         // おじゃまアイテムを他のユーザが削除したかを受信(Polling request)
         getObstacle();
 
@@ -730,7 +735,6 @@
             // 「:」とスコアを描画
             ctx.fillText(separator + scoreText, scoreX, y);
         }
-        
     }
 
     function drawUserNumber(){
@@ -898,7 +902,6 @@
         
             // canvasに描画
             ctx.fillText('"'+hinderingPlayerName+'"さんがお邪魔ブロックを消しました．', canvas.width / 2, canvas.height / 3, CANVAS_WIDTH); // テキストを描画
-        }
-        
+        }   
     }
 })();
