@@ -52,16 +52,19 @@ class Block{
         this.color = color;
         this.speed = 0.4;
         //this.question = new Question();
-        this.index = Math.floor(Math.random() * calcData.length); // 計算問題を格納する配列のインデックス
-        this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
-        this.waitFrame = this.waitTime * 60; // 1秒あたり60フレームと仮定
+        this.index; // 計算問題を格納する配列のインデックス
+        this.waitTime; // 0~5秒のランダムな待ち時間
+        this.waitFrame; // 1秒あたり60フレームと仮定
         this.waitForQuiz = 0;  // クイズが出題されるいる間の待ち時間
         this.imageArray = []; // Imageインスタンスを格納する配列
+        this.appearanceObstacle = false;
         // テキストのスタイル設定
         this.ctx.font = '20px Arial'; // フォントサイズとフォント種類
         this.ctx.fillStyle = '#ffffff'; // テキストの塗りつぶし色（白）
         this.ctx.strokeStyle = '#000000'; // テキストの枠線の色（黒）
         this.ctx.lineWidth = 3; // 枠線の太さ
+        // 問題などを初期化
+        this.initialize();
     }
 
     /**
@@ -72,6 +75,11 @@ class Block{
         this.imageArray.map((v) => {
             if(!v.imageLoaded) return;
         });
+
+        // 問題のフォントを設定
+        this.ctx.fillStyle = '#000000';
+        this.ctx.font = "bold 20px 'Segoe Print', san-serif";
+        this.ctx.textAlign = "center";
 
         // フルーツ(レベルによって)描画する画像を判断
         let fruit = this.calcData[this.index].fruit;
@@ -111,17 +119,23 @@ class Block{
                     this.radius * 2
                     );
                 break;
+            case 'OBSTACLE':
+                this.ctx.drawImage(this.imageArray[4],
+                    this.position.x - this.radius,
+                    this.position.y - this.radius,
+                    this.radius * 2,
+                    this.radius * 2
+                    );
+                this.ctx.fillStyle = '#ffffff';
+                break;
         }
             
-        // 問題のフォントを設定
-        this.ctx.fillStyle = '#000000';
-        this.ctx.font = '20px Arial';
-        this.ctx.textAlign = "center";
+        
         // テキストを表示
         this.ctx.fillText(
             `${this.calcData[this.index].question}`,
             this.position.x,
-            this.position.y + 10  // 数字が円の中心にくるよう微調整
+            this.position.y + 15  // 数字が円の中心にくるよう微調整
         ); 
         
     }
@@ -149,7 +163,6 @@ class Block{
 
         // 円の描画
         this.draw();
-        // this.drawSelectedSignal();
     }
 
     /**
@@ -194,6 +207,9 @@ class Block{
                     //addScore = Math.floor(0.5 * (this.area - this.position.y) * 100) / 100;
                     console.log(addScore);
                     break;
+                case 'OBSTACLE':
+                    addScore = 'OBSTACLE';
+                    break;
             }
 
             // 初期化
@@ -205,7 +221,7 @@ class Block{
             // // 選択を解除
             //this.selected = false;
             console.log('OK');
-            return  Number(addScore);
+            return  addScore;
         } else {
             console.log('not OK');
             return 0;
@@ -222,8 +238,17 @@ class Block{
         this.waitTime = Math.random() * 5;  // 0~5秒のランダムな待ち時間
         this.waitFrame = (this.waitTime + this.waitForQuiz) * 60; // 1秒あたり60フレームと仮定
         this.position.set(this.initialPosition.x, this.initialPosition.y);
-        //this.question = new Question();
+        this.setQuestion();
+    }
+
+    // 問題を設定する
+    setQuestion(){
+        // 問題を設定
         this.index = Math.floor(Math.random() * this.calcData.length);
+        // お邪魔攻撃が可能でない時
+        if(this.calcData[this.index].fruit === 'OBSTACLE' && this.appearanceObstacle === false){
+            this.setQuestion();
+        }
     }
 
     /**
@@ -247,15 +272,32 @@ class Block{
 
     // 画像の読み込み
     loadImage(){
-        for(let i = 0; i< 4; i++){
+        for(let i = 0; i < this.imgPath.length; i++){
             this.imageArray[i] = new Image();
             this.imageArray[i].onload = this.onImageLoad.bind(this);
             this.imageArray[i].onerror = this.onImageError.bind(this);
             this.imageArray[i].src = this.imgPath[i];
-
-            // console.log(this.imageArray[i].src);
         }
     }
+
+    /**
+     * お邪魔の出現，非出現を切り替える
+     * @param {string} playerName 
+     * @param {Array<{ name: string, rank: number, score: number }>} scoreDate 
+     * @param {number} rate 
+     * @returns 
+     */
+    setAppearanceObstacle(playerName, scoreDate, rate){
+        for(let i = 0; i < Math.floor(scoreDate.length * rate); i++){
+            if(scoreDate[i].name === playerName){
+                this.appearanceObstacle = false;
+                return;
+            }
+        } 
+        this.appearanceObstacle = true;
+    }
+
+
     
 }
 
@@ -428,10 +470,10 @@ class Quiz{
         this.isPressed = [false, false, false, false];
         this.correctOrIncorrect = [null, null, null, null];
     }
-     /**
+    /**
      * ブロックを描画する
      */
-     draw(){      
+    draw(){      
         // 円の色を設定する
         this.ctx.fillStyle = this.color;
         // 落ち葉を描画
@@ -441,7 +483,7 @@ class Quiz{
             this.width,
             this.height
             );
-         
+            
         // 問題のフォントを設定
         this.ctx.fillStyle = '#ffffff'
         this.ctx.font = "bold 15px 'Segoe Print', san-serif";
@@ -687,4 +729,83 @@ class Quiz{
         // }, 1000);
     }
 
+}
+
+class Obstacle{
+    /**
+     * @constructor
+     * @param {CanvasRenderingContext2D} ctx - 描画などに利用する2Dコンテキスト
+     * @param {number} x - X 座標
+     * @param {number} y - Y 座標
+     * @param {number} width - 横幅
+     * @param {number} height - 縦幅
+     * @param {number} canvasWidth - canvasの横幅
+     * @param {number} life - ライフ（生存フラグを兼ねる）
+     * @param {string} imgPath - 画像パス
+     */
+    constructor(ctx, x, y, width, height, canvasWidth, imgPath){
+        this.ctx = ctx;
+        this.position = new Position(x, y);
+        this.width = width;
+        this.height = height;
+        this.canvasWidth = canvasWidth;
+        this.speed = 1;
+        this.imgPath = imgPath;
+        this.direction = 'right' // 進む方向
+    }
+
+    /**
+     * ブロックを描画する
+     */
+    draw(){      
+        // 雲を描画
+        this.ctx.drawImage(this.img,
+            this.position.x - this.width / 2,
+            this.position.y - this.height / 2,
+            this.width,
+            this.height
+            );
+    }
+
+    /**
+     * ブロックの位置の更新
+     */
+    update(){
+        if(this.direction === 'right'){
+            // 右に進める
+            this.position.x += this.speed;
+        } else if(this.direction === 'left'){
+            // 左に進める
+            this.position.x -= this.speed;
+        }
+
+        if(this.position.x > this.canvasWidth){
+            // 右端に達したら，進行方向を左に
+            this.direction = 'left';
+        } else if(this.position.x < 0){
+            // 左端に達したら，進行方向を右に
+            this.direction = 'right';
+        }
+
+        this.draw();
+    }
+
+
+    // 画像の読み込みが完了したときに呼ばれるコールバック関数
+    onImageLoad(){
+        this.imageLoaded = true;
+    }
+
+    // 画像の読み込みが失敗したときに呼ばれるコールバック関数
+    onImageError(){
+        console.error("Failed to load image:", this.imageUrl);
+    }
+
+    // 画像の読み込み
+    loadImage(){
+        this.img = new Image();
+        this.img.onload = this.onImageLoad.bind(this);
+        this.img.onerror = this.onImageError.bind(this);
+        this.img.src = this.imgPath;
+    }
 }
