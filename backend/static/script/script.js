@@ -145,7 +145,7 @@
     let GAMETIME;
 
     if (gameState === null) {
-        GAMETIME = 100; // デフォルト値を設定
+        GAMETIME = 180; // デフォルト値を設定
     } else {
         gameState = JSON.parse(gameState); // 文字列をオブジェクトに変換
         if (gameState.time !== undefined) {
@@ -167,7 +167,7 @@
     /**
      * お邪魔攻撃を受ける割合
      */
-    let ObstacleRate = 1/5;
+    let ObstacleRate = 1/4;
     /**
      * Obstacleクラスのインスタンスを格納する変数
      */
@@ -289,6 +289,14 @@
             }
         }, 1000); // 1秒ごとに更新
 
+        const scoreInterval = setInterval(() => {
+            // スコアの更新
+            console.log(playerName, score);
+            sendScore(playerName, score).then(() => {
+                getScores(playerName);
+            });
+        }, 1000); // 1秒ごとに更新
+
         // ゲーム時間の計測を開始
         const userCountInterval = setInterval(() => {
             getUserCount();
@@ -316,12 +324,6 @@
         util.drawRect(0, 0, canvas.width, canvas.height, '#87cefa');
         // 画像をCanvasの背景に描画
         ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
-
-        // スコアの更新
-        console.log(playerName, score);
-        sendScore(playerName, score).then(() => {
-            getScores(playerName);
-        });
 
         // ユーザーの人数を描画
         drawUserNumber();
@@ -843,6 +845,9 @@
             .then(data => {
                 if (data.name) {
                     console.log('User name of hindering:', data.name);
+                    if (hinderingPlayerName === data.name) {
+                        return;
+                    }
                     // おじゃまアイテムを消したユーザー名を格納
                     hinderingPlayerName = data.name;
                     // 妨害開始
@@ -893,7 +898,7 @@
         // ブロックの落ちる速度を上げる
         if(obstacleArray[0].isDisturbed){
             blockArray.map((v) => {
-                v.speed = 1.0;
+                v.speed = 1.2;
             })
         }
 

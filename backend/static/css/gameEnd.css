@@ -96,35 +96,40 @@ h1 {
 tbody tr:nth-child(1) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/gold.png'); /* 金の王冠の画像のURLを設定 */
     vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 tbody tr:nth-child(2) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/silver.png'); /* 銀の王冠の画像のURLを設定 */
+    vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 tbody tr:nth-child(3) td:first-child::before {
     content: '';
     display: inline-block;
-    width: 40px; /* 画像の幅を調整 */
-    height: 40px; /* 画像の高さを自動に設定 */
+    width: 45px; /* 画像の幅を調整 */
+    height: 45px; /* 画像の高さを自動に設定 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url('/static/images/bronze.png'); /* 銅の王冠の画像のURLを設定 */
+    vertical-align: middle; /* ランクの数字と垂直方向に中央揃え */
+    transform: translateY(-3.5px); /* 10ピクセル上に移動 */
 }
 
 /* ランクが一位、二位、三位以外の場合には空の要素を表示 */

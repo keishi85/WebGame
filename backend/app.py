@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from flask_pymongo import PyMongo
 from flask_socketio import SocketIO, emit
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ user_count = 0
 game_started = False    # ゲーム開始の状態を管理する変数
 nameOfHinderingPlayer = None    # お邪魔アイテムを使ったプレイヤーの名前
 isObstacleRemoved = False    # お邪魔アイテムが消されたかどうか
-obstacle_removed_info = {"isRemoved": False, "name": None, "count": 0}  # おじゃまが削除されたことをトラックするための辞書を用意
+obstacle_removed_info = {"isRemoved": False, "name": None, "removalTime": None}  # おじゃまが削除されたことをトラックするための辞書を用意
 
 # ゲーム開始ボタンのエンドポイント
 @app.route('/')
@@ -103,6 +104,7 @@ def getObstacleDeleted():
     data = request.get_json()
     obstacle_removed_info["isRemoved"] = True
     obstacle_removed_info["name"] = data.get('name')
+    obstacle_removed_info["removalTime"] = datetime.now()
 
     # 減点後の結果をクライアントに通知
     return jsonify({'message': f'{obstacle_removed_info["name"]} hindering'})
@@ -110,22 +112,16 @@ def getObstacleDeleted():
 # おじゃまが消されたことを全ユーザに通知
 @app.route('/item_removed', methods=['GET'])
 def send_obstacle():
-    if obstacle_removed_info["isRemoved"] and obstacle_removed_info["count"] < user_count:
-        # おじゃまが削除されたことをクライアントに通知した回数をカウント
-        obstacle_removed_info["count"] += 1
+    if obstacle_removed_info["isRemoved"] and datetime.now() <= obstacle_removed_info["removalTime"] + timedelta(seconds=10):
 
         # おじゃまが削除された情報をクライアントに送信
         response = jsonify({'name': obstacle_removed_info["name"]})
         return response
     
-    elif obstacle_removed_info["count"] >= user_count:
-        # おじゃまが削除されたことを全ユーザに通知した回数が参加人数を超えた場合、カウントをリセット
+    else:
         obstacle_removed_info["isRemoved"] = False
         obstacle_removed_info["name"] = None
-        obstacle_removed_info["count"] = 0
-        return jsonify({'message': 'All players have been notified'})
-    
-    else:
+        obstacle_removed_info["removalTime"] = None
         return jsonify({'message': 'No player has removed the obstacle'})
 
 # ゲームが終了したタイミングで遷移

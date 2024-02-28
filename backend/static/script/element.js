@@ -462,7 +462,7 @@ class Quiz{
         this.life = life;
         this.area = area;
         this.color = color;
-        this.speed = 0.2;
+        this.speed = 0.3;
         this.quizData = quizData;
         this.quizIndex = 0;
         this.imgPath = imgPath;
@@ -599,7 +599,7 @@ class Quiz{
             this.correctOrIncorrect[userAnswer] = true;
 
             // スコア計算(仮に1000点)
-            let addScore = 1000;
+            let addScore = 300;
 
             // 1秒後にリセット
             setTimeout(() => {

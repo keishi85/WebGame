@@ -32,23 +32,25 @@
         </table>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const playButton = document.getElementById('playButton');
-            const bgm = document.getElementById('endSound');
-            playButton.addEventListener('click', function (event) {
-                event.preventDefault();
-                if (bgm.paused) {
-                    bgm.play()
-                        .then(() => console.log("オーディオの再生を開始しました。"))
-                        .catch(error => console.error("オーディオの再生に失敗しました。", error));
-                    playButton.textContent = '音楽を停止(Stop music)';
-                } else {
-                    bgm.pause();
-                    playButton.textContent = '音楽を再生(Play music)';
-                }
+        window.addEventListener('load', () => {
+            document.addEventListener('DOMContentLoaded', function() {
+                const playButton = document.getElementById('playButton');
+                const bgm = document.getElementById('endSound');
+                playButton.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    if (bgm.paused) {
+                        bgm.play()
+                            .then(() => console.log("オーディオの再生を開始しました。"))
+                            .catch(error => console.error("オーディオの再生に失敗しました。", error));
+                        playButton.textContent = '音楽を停止(Stop music)';
+                    } else {
+                        bgm.pause();
+                        playButton.textContent = '音楽を再生(Play music)';
+                    }
+                });
             });
+            localStorage.clear();
         });
-        localStorage.clear();
     </script>
 </body>
 </html>

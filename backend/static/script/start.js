@@ -65,11 +65,26 @@
         
         startGameButton.addEventListener('click', async () => {
             name = nameInput.value.trim(); // 名前入力の前後の空白を削除
+
+            let fullChars = 0, halfChars = 0;
+
+            for (let i = 0; i < name.length; i++) {
+                // 全角文字かどうかをチェック
+                if (name.charCodeAt(i) > 255) {
+                    fullChars++;
+                } else {
+                    halfChars++;
+                }
+            }
+
     
             if (name === '') {
                 // 名前が入力されていない場合は警告を表示
                 alert('Please enter your name.');
-            } else {
+            }else if (halfChars > 8 || fullChars > 5 || (halfChars + fullChars) > 8){
+                alert('アルファベットは8文字以内、全角文字は5文字以内で入力してください。');
+            }
+             else {
                 try {
                     await submitUser(); // 参加人数をサーバーに送信
 
