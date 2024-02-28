@@ -480,7 +480,6 @@
 
                                 if(judgement === 'OBSTACLE'){
                                     sendObstacleSignal();
-                                    // isObstacle = true; // 仮にここでtrueにする
                                     console.log('OBSTACLE');
                                     // 正解時はcorrectをtrueに
                                     correct = true;
