@@ -25,7 +25,7 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ score.name }}</td>
-                        <td>{{ score.score|round(1) }}</td>
+                        <td>{{ (score.score|float)|round(1) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

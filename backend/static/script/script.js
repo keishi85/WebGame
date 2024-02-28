@@ -313,6 +313,7 @@
         ctx.drawImage(treeImg, -100, -150, CANVAS_WIDTH * 3 / 2, CANVAS_HEIGHT);
 
         // スコアの更新
+        console.log(playerName, score);
         sendScore(playerName, score).then(() => {
             getScores(playerName);
         });
