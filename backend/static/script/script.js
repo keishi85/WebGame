@@ -858,7 +858,7 @@
                 }
             })
             .catch(error => console.error('Polling error:', error));
-        }, 5000); // 5秒ごとにポーリング
+        }, 1500); // 1.5秒ごとにポーリング
     }
 
     // お邪魔攻撃を開始する
