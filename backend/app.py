@@ -12,6 +12,7 @@ app.config["MONGO_URI"] = "mongodb://py_user:py_pwd@mongo:27017/question-db"
 mongo = PyMongo(app)
 
 user_count = 0
+player_name = []
 game_started = False    # ゲーム開始の状態を管理する変数
 nameOfHinderingPlayer = None    # お邪魔アイテムを使ったプレイヤーの名前
 isObstacleRemoved = False    # お邪魔アイテムが消されたかどうか
@@ -86,6 +87,12 @@ def get_user_count():
 # 参加したことを確認するエンドポイント
 @app.route('/user_count', methods=['POST'])
 def count_user():
+    global player_name
+    data = request.get_json()
+    name = data.get('userName')
+    if name not in player_name:
+        player_name.append(name)
+
     global user_count
     user_count += 1
     return jsonify({'message': 'User count updated'})
@@ -139,6 +146,10 @@ def game_end():
 @app.route('/superuser')
 def super_user():
     return render_template('superUser.html')
+
+@app.route('/getUserInfo')
+def get_user_info():
+    return jsonify({'user_count': user_count, 'player_list': player_name})
 
 # スーパーユーザーからゲームの開始を通知するエンドポイント
 @app.route('/signal_game_start', methods=['POST'])

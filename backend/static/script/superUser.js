@@ -1,9 +1,13 @@
 (() => {
+    let playerCount = 0;
     /**
      * ゲームスタート画面が完了したときに発火する load イベント
      */
     document.addEventListener('DOMContentLoaded', () => {
         const sendButton = document.getElementById('send');
+
+        // 参加人数と参加者名簿を取得
+        const getInfoInterval = setInterval(getUserInfo, 1000);
         
         sendButton.addEventListener('click', async () => {
             try {
@@ -61,5 +65,29 @@
         } else {
             loadingElement.style.display = 'none'; // 通信終了後に非表示
         }
+    }
+    // 参加人数と参加者名簿を取得
+    function getUserInfo() {
+        fetch('/getUserInfo')
+        .then(response => response.json())
+        .then(data => {
+            const playerCountElement = document.getElementById('playerCount');
+            const playerList = document.getElementById('playerList');
+
+            // 参加人数を取得
+            playerCount = data.user_count;
+            playerCountElement.textContent = playerCount;
+            // 既存の名前を取得
+            const existingNames = [...playerList.querySelectorAll('li')].map(li => li.textContent);
+            data.player_list.forEach(name => {
+                // 既に表示されている名前でなければリストに追加する
+                if (!existingNames.includes(name)) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = name;
+                    playerList.appendChild(listItem);
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
     }
 })();
