@@ -17,9 +17,28 @@
 
         <form id="nameForm">      
             <button type="button" id="send" class="mochiy-pop-one-regular">ゲーム開始</button>
-            <button id="deleteDb" class="mochiy-pop-one-regular">DBの削除</button>
-            <button id="setNotGameStart" class="mochiy-pop-one-regular">ゲームが始まらないように設定</button>
+            <button type="button" id="deleteDb" class="mochiy-pop-one-regular">DBの削除</button>
+            <button type="button" id="setNotGameStart" class="mochiy-pop-one-regular">ゲームが始まらないように設定</button>
         </form>
+    </div>
+    <div class="game-participanr-container">
+        <p>参加者人数: {{ participants|length }}</p> <!-- 参加者の人数を表示 -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for participant in participants %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ participant.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <script src="../static/script/superUser.js"></script>
 </body>

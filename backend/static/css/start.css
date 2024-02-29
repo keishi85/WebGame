@@ -50,7 +50,7 @@ canvas {
     z-index: 2; /* テキストボックスとボタンを前面に */
      /* 枠線のスタイル設定 */
     border: 2px solid #FF4500; /* 枠線の色と太さ a*/
-    height: 200px; /* 適切な高さを指定 */
+    height: 300px; /* 適切な高さを指定 */
     overflow-y: auto; /* スクロール可能にする */
 }
 

@@ -900,6 +900,11 @@
             blockArray.map((v) => {
                 v.speed = 1.2;
             })
+        } else {
+            // ブロックの落ちる速度を元に戻す
+            blockArray.map((v) => {
+                v.speed = 0.4;
+            })
         }
 
         // 最初2秒間のみテキストを表示
